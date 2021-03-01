@@ -9,7 +9,6 @@ import mockUserImage
                                                                                        from '../../images/mock/main-profile-icon.jpg';
 import { UserCircle }                                                                  from '../modules/Game/components/GameBoard/components/UserCircle';
 import { DRAWER_WIDTH }                                                                from './Sidebar';
-import { rollDices }                                                                   from '../modules/Game/components/Dice';
 
 interface IStyledHeaderProps extends AppBarProps {
   shifted: number;
