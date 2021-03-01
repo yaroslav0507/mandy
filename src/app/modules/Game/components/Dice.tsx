@@ -146,18 +146,22 @@ export const Dices: FC<IDices> = ({ angles, onClick }) => {
   }
   
   useEffect(() => {
+    handleSizeCheck();
+  }, []);
+  
+  useEffect(() => {
     window.addEventListener('resize', () => handleSizeCheck());
     
     return () => {
       window.removeEventListener('resize', () => handleSizeCheck());
     };
-  }, [window.innerWidth]);
+  }, [size, window.innerWidth]);
   
   useEffect(() => {
     setTimeout(() => rollDices(angles));
   }, [angles]);
   
-  const Dice = () => (
+  const Dice = useMemo(() => (
     <DiceWrapper className="dice">
       <DiceFaceFront size={ size }>
         <Dot1 size={ size }/>
@@ -193,15 +197,15 @@ export const Dices: FC<IDices> = ({ angles, onClick }) => {
         <DotDown size={ size }/>
       </DiceFaceBottom>
     </DiceWrapper>
-  )
+  ), [size]);
   
-  return useMemo(() =>
+  return (
       <DicesLayer
         size={ size }
         onClick={ onClick }
       >
-        <Dice/>
-        <Dice/>
+        {Dice}
+        {Dice}
       </DicesLayer>
-    , [])
+  )
 }
