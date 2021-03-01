@@ -6,8 +6,6 @@ const logger          = require('morgan');
 const methodOverride  = require('method-override');
 const app             = express();
 
-require('dotenv').load();
-
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
@@ -21,7 +19,7 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-app.use(express.static(path.join(__dirname, "../dist")));
+app.use(express.static(path.join(__dirname, "../build")));
 
 app.use(function(err, req, res, next){
   res.status(500).send({err: err.stack});
@@ -36,7 +34,7 @@ app.use(function(req, res, next) {
 });
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
+  res.sendFile(path.join(__dirname, '../build/index.html'));
 });
 
 /**
