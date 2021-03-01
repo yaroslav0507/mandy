@@ -9,6 +9,7 @@ import mockUserImage
                                                                                        from '../../images/mock/main-profile-icon.jpg';
 import { UserCircle }                                                                  from '../modules/Game/components/GameBoard/components/UserCircle';
 import { DRAWER_WIDTH }                                                                from './Sidebar';
+import { rollDices }                                                                   from '../modules/Game/components/GameBoard/GameBoard';
 
 interface IStyledHeaderProps extends AppBarProps {
   shifted: number;
@@ -137,7 +138,7 @@ export const Header: FC<IHeaderOwnProps> = ({
         <Section>
           <IconButton
             color="inherit"
-            onClick={ rollDices }
+            onClick={ () => rollDices() }
           >
             <DiceIcon src={ iconDice }/>
           </IconButton>
