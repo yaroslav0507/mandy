@@ -1,25 +1,6 @@
-import React, { FC, useEffect, useMemo, useState } from "react"
-import styled, { css }                             from "styled-components";
-import { rollDices }                               from './GameBoard/GameBoard';
-
-interface ISizeProp {
-  size: number;
-}
-
-const DicesLayer = styled.div<ISizeProp>`${ ({ size }) => css`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: ${ size * 2.5 }px;
-  height: ${ size * 2.5 }px;
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  margin: auto;
-  cursor: pointer;
-` }`;
+import React, { FC, useMemo } from 'react';
+import styled, { css }        from 'styled-components';
+import { ISizeProp }          from './Dices';
 
 const DiceWrapper = styled.div`${ css`
   width: 100%;
@@ -131,37 +112,8 @@ const DotRight = styled(Dot)`&& {
   margin-right: 0;
 }`;
 
-interface IDices {
-  angles: number[][];
-  
-  onClick(): void;
-}
-
-export const Dices: FC<IDices> = ({ angles, onClick }) => {
-  const [size, setSize] = useState(85);
-  
-  const handleSizeCheck = () => {
-    const el: any = document.getElementsByClassName('field')[0];
-    setSize(el && el.offsetHeight);
-  }
-  
-  useEffect(() => {
-    handleSizeCheck();
-  }, []);
-  
-  useEffect(() => {
-    window.addEventListener('resize', () => handleSizeCheck());
-    
-    return () => {
-      window.removeEventListener('resize', () => handleSizeCheck());
-    };
-  }, [size, window.innerWidth]);
-  
-  useEffect(() => {
-    setTimeout(() => rollDices(angles));
-  }, [angles]);
-  
-  const Dice = useMemo(() => (
+export const Dice: FC<ISizeProp> = ({ size }) => {
+  return useMemo(() => (
     <DiceWrapper className="dice">
       <DiceFaceFront size={ size }>
         <Dot1 size={ size }/>
@@ -198,14 +150,4 @@ export const Dices: FC<IDices> = ({ angles, onClick }) => {
       </DiceFaceBottom>
     </DiceWrapper>
   ), [size]);
-  
-  return (
-      <DicesLayer
-        size={ size }
-        onClick={ onClick }
-      >
-        {Dice}
-        {Dice}
-      </DicesLayer>
-  )
-}
+};

@@ -28,7 +28,7 @@ export const Loader: FC = () => (
 export const withLoader = <P extends IWithLoaderProps>(
   Component: ComponentType<IWithLoaderProps>
 ): FC<P> => {
-  return function WithLoader({loading, ...props}: IWithLoaderProps) {
-    return loading ? <Loader/> : <Component {...props} />;
+  return function WithLoader({ loading, ...props }: IWithLoaderProps) {
+    return loading ? <Loader/> : <Component { ...props } />;
   };
 };

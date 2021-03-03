@@ -3,12 +3,12 @@ import React, { FC }   from 'react';
 import styled, { css } from 'styled-components';
 
 export const UserImageWrapper = styled.div`
-  ${({color, theme: {breakpoints}}: any) => css`
+  ${ ({ color, theme: { breakpoints } }: any) => css`
     width: 38px;
     height: 38px;
     min-width: 38px;
-    border: 2px solid ${color};
-    background-color: ${color};
+    border: 2px solid ${ color };
+    background-color: ${ color };
     border-radius: 100%;
     display: flex;
     align-items: center;
@@ -19,7 +19,7 @@ export const UserImageWrapper = styled.div`
       margin-right: 0;
     }
     
-    ${breakpoints.up('md')} {
+    ${ breakpoints.up('md') } {
       width: 44px;
       height: 44px;
     }
@@ -37,7 +37,7 @@ export const UserImageWrapper = styled.div`
         position: absolute;
       }
     }
-`}`;
+` }`;
 
 interface IUserCircle {
   color?: string;
@@ -46,20 +46,23 @@ interface IUserCircle {
 }
 
 export const UserCircle: FC<IUserCircle> = ({
-  color = '#6f90d9',
-  image,
-  initials
-}) => (
-  <UserImageWrapper color={color}>
+                                              color = '#6f90d9',
+                                              image,
+                                              initials
+                                            }) => (
+  <UserImageWrapper color={ color }>
     <IconButton
       color="inherit"
-      onClick={() => true}
+      onClick={ () => true }
     >
-      {image ? (
-        <img src={image} alt={initials}/>
+      { image ? (
+        <img
+          src={ image }
+          alt={ initials }
+        />
       ) : (
-        <span>{initials}</span>
-      )}
+          <span>{ initials }</span>
+        ) }
     </IconButton>
   </UserImageWrapper>
 );

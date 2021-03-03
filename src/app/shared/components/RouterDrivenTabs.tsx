@@ -24,12 +24,12 @@ interface IRouterDrivenTabsProps {
 }
 
 export const RouterDrivenTabsBase: FC<IRouterDrivenTabsProps> = ({
-  tabs,
-  baseURL,
-}) => {
-  const {push} = useHistory();
-  const {pathname} = useLocation();
-  const page = pathname.replace(`${baseURL}/`, '');
+                                                                   tabs,
+                                                                   baseURL,
+                                                                 }) => {
+  const { push } = useHistory();
+  const { pathname } = useLocation();
+  const page = pathname.replace(`${ baseURL }/`, '');
 
   const currentTab = useMemo(
     () => tabs.find(tab => tab.link === page),
@@ -39,15 +39,15 @@ export const RouterDrivenTabsBase: FC<IRouterDrivenTabsProps> = ({
   const handleChangeTab = useCallback(
     // eslint-disable-next-line @typescript-eslint/ban-types
     (_event: ChangeEvent<{}>, tabLink: string) => {
-      push(`${baseURL}/${tabLink}`);
+      push(`${ baseURL }/${ tabLink }`);
     },
     [baseURL, push]
   );
 
   const a11yProps = useCallback(
     (tabLink: string) => ({
-      id: `tab-${tabLink}`,
-      'aria-controls': `tabpanel-${tabLink}`,
+      id             : `tab-${ tabLink }`,
+      'aria-controls': `tabpanel-${ tabLink }`,
     }),
     []
   );
@@ -55,32 +55,32 @@ export const RouterDrivenTabsBase: FC<IRouterDrivenTabsProps> = ({
   return (
     <>
       <Tabs
-        value={currentTab ? page : ''}
-        onChange={handleChangeTab}
+        value={ currentTab ? page : '' }
+        onChange={ handleChangeTab }
         variant="scrollable"
-        centered={false}
+        centered={ false }
         scrollButtons="on"
-        TabIndicatorProps={{
+        TabIndicatorProps={ {
           style: {
             height: '3px'
           }
-        }}
+        } }
       >
         <HiddenTab value=""/>
 
-        {tabs.map(
+        { tabs.map(
           (tab, index) =>
             <Tab
-              {...a11yProps(tab.link)}
-              key={`${tab.link}-${index}`}
-              icon={tab.icon}
-              value={tab.link}
-              label={tab.label}
+              { ...a11yProps(tab.link) }
+              key={ `${ tab.link }-${ index }` }
+              icon={ tab.icon }
+              value={ tab.link }
+              label={ tab.label }
             />
-        )}
+        ) }
       </Tabs>
 
-      {currentTab?.component}
+      { currentTab?.component }
     </>
   );
 };

@@ -1,15 +1,13 @@
 import { AppBar as MuiHeader, Badge, IconButton, Menu as MuiMenu, MenuItem, Toolbar, } from '@material-ui/core';
 import { AppBarProps }                                                                 from '@material-ui/core/AppBar/AppBar';
 import { Menu }                                                                        from '@material-ui/icons';
-import React, { FC, useEffect, useRef }                                                from 'react';
+import React, { FC, useRef }                                                           from 'react';
 import styled, { css }                                                                 from 'styled-components';
 import { ReactComponent as Logo }                                                      from '../../images/icons/logo.svg';
-import iconDice                                                                        from '../../images/dice.png';
 import mockUserImage
                                                                                        from '../../images/mock/main-profile-icon.jpg';
-import { UserCircle }                                                                  from '../modules/Game/components/GameBoard/components/UserCircle';
+import { UserCircle }                                                                  from '../modules/Game/Board/components/UserCircle';
 import { DRAWER_WIDTH }                                                                from './Sidebar';
-import { rollDices }                                                                   from '../modules/Game/components/GameBoard/GameBoard';
 
 interface IStyledHeaderProps extends AppBarProps {
   shifted: number;
@@ -109,15 +107,11 @@ export const Header: FC<IHeaderOwnProps> = ({
   const handleClick = () => {
     setAnchorEl(menuAnchorRef.current);
   };
-  
-  useEffect(() => {
-    rollDices();
-  }, []);
-  
+
   const handleClose = () => {
     setAnchorEl(null);
   };
-  
+
   return (
     <StyledHeader shifted={ +(sidebarOpen && !isMobile) }>
       <StyledToolbar
@@ -131,18 +125,18 @@ export const Header: FC<IHeaderOwnProps> = ({
           >
             <MenuIcon/>
           </IconButton>
-          
+
           <StyledLogo/>
         </LogoSection>
-        
+
         <Section>
-          <IconButton
-            color="inherit"
-            onClick={ () => rollDices() }
-          >
-            <DiceIcon src={ iconDice }/>
-          </IconButton>
-          
+          {/*<IconButton*/ }
+          {/*  color="inherit"*/ }
+          {/*  onClick={ () => rollDices() }*/ }
+          {/*>*/ }
+          {/*  <DiceIcon src={ iconDice }/>*/ }
+          {/*</IconButton>*/ }
+
           <StyledBadge
             color="secondary"
             badgeContent={ '1' }
@@ -154,10 +148,10 @@ export const Header: FC<IHeaderOwnProps> = ({
               color="#368962"
               image={ mockUserImage }
             />
-            
+
             <MenuAnchor ref={ menuAnchorRef }/>
           </StyledBadge>
-          
+
           <MuiMenu
             id="user-menu"
             anchorEl={ anchorEl }

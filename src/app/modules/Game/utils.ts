@@ -1,4 +1,5 @@
 import { IPlayer, Player } from './models/Player';
+import { randomNumber }    from '../../shared/functions';
 
 const fieldMap = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
@@ -76,7 +77,74 @@ initialCoordinates.forEach((player) => {
   })
 });
 
+export const angleToResult = (xAngle: number, yAngle: number) => {
+  const spinMap = {
+    0: {
+      0: 1,
+      1: 3,
+      2: 6,
+      3: 4
+    },
+    1: {
+      0: 2,
+      1: 2,
+      2: 2,
+      3: 2
+    },
+    2: {
+      0: 6,
+      1: 4,
+      2: 1,
+      3: 3
+    },
+    3: {
+      0: 5,
+      1: 5,
+      2: 5,
+      3: 5
+    }
+  };
+
+  const spins = (degX: number, degY: number) => ({ a: (degX / 90) % 4, b: (degY / 90) % 4 });
+  const { a, b } = spins(xAngle, yAngle);
+  // @ts-ignore
+  return spinMap[a][b]
+}
+
+export const rollDices = () => {
+  const result: number[][] = [];
+  const min = 1;
+  const max = 16;
+
+  for (let i = 0; i < 2; i++) {
+    const randomAngle = (max: number, min: number) => {
+      return randomNumber(min, max) * 90;
+    }
+
+    const xRand = randomAngle(max, min);
+    const yRand = randomAngle(max, min);
+
+    result.push([xRand, yRand]);
+  }
+
+  return result;
+}
+
+export const randomDicesResult = () => {
+  const angles = rollDices();
+  const [dice1Angles, dice2Angles] = angles;
+  const result = [
+    angleToResult(dice1Angles[0], dice1Angles[1]),
+    angleToResult(dice2Angles[0], dice2Angles[1]),
+  ];
+
+  return {
+    angles,
+    result
+  }
+};
+
 export {
   fieldMap,
-  initialCoordinatesMap
+  initialCoordinatesMap,
 }

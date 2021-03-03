@@ -36,7 +36,7 @@ export const Field = styled.div<{ empty: boolean; selected: boolean; withChip: b
         box-shadow: 0 0 0 3px #ffffffde;
      }
     }
-  `};
+  ` };
   
   &:after {
     content: "";

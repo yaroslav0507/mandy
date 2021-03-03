@@ -1,10 +1,10 @@
 import styled from 'styled-components';
 
-export const Chip = styled.div<{color: string}>`
+export const Chip = styled.div<{ color: string }>`
   width: 70%;
   height: 70%;
   border-radius: 100%;
-  background-color: ${({color}) => color};
+  background-color: ${ ({ color }) => color };
   display: block;
   position: absolute;
   left: 0;

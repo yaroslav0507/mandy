@@ -11,7 +11,7 @@ export class Player implements IPlayer {
   name: string = '';
   color: string = '';
   chips: IChip[] = [];
-  
+
   constructor(data: IPlayer) {
     if (data) {
       this.name = data.name;

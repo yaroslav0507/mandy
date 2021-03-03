@@ -1,5 +1,5 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import styled, { css }                                   from 'styled-components';
+import React, { ReactNode, useEffect, useState } from 'react';
+import styled, { css }                           from 'styled-components';
 import { debounce }                              from '../shared/functions';
 import { Header }                                from './Header';
 import { Sidebar }                               from './Sidebar';
@@ -34,35 +34,35 @@ const MainContent = styled.div`
   color: #fff;
   background-color: #202227;
 
-  ${({isDesktop, leftDrawerOpen, theme}: any) =>
+  ${ ({ isDesktop, leftDrawerOpen, theme }: any) =>
   isDesktop && css`
-      transition: ${theme.transitions.create('all', {
-    easing: leftDrawerOpen
-      ? theme.transitions.easing.easeOut
-      : theme.transitions.easing.sharp,
+      transition: ${ theme.transitions.create('all', {
+    easing  : leftDrawerOpen
+              ? theme.transitions.easing.easeOut
+              : theme.transitions.easing.sharp,
     duration: leftDrawerOpen
-      ? theme.transitions.duration.enteringScreen
-      : theme.transitions.duration.leavingScreen,
-  })};
+              ? theme.transitions.duration.enteringScreen
+              : theme.transitions.duration.leavingScreen,
+  }) };
 
-  ${leftDrawerOpen && css`
+  ${ leftDrawerOpen && css`
       margin-left: 0;
-    `};
-  `};
+    ` };
+  ` };
 
-  ${({theme: {breakpoints, spacing}}) => css`
-    ${breakpoints.up('sm')} {
-      padding-left: ${spacing(3)}px;
-      padding-right: ${spacing(3)}px;
+  ${ ({ theme: { breakpoints, spacing } }) => css`
+    ${ breakpoints.up('sm') } {
+      padding-left: ${ spacing(3) }px;
+      padding-right: ${ spacing(3) }px;
     } ;
-  `}
+  ` }
 ` as any;
 
 interface ILayoutProps {
   children: ReactNode;
 }
 
-export const Layout: React.FC<ILayoutProps> = ({children}) => {
+export const Layout: React.FC<ILayoutProps> = ({ children }) => {
   const [drawerOpened, setDrawerOpened] = useState(!isMobile());
 
   const toggleLeftDrawerState = () => {
@@ -96,22 +96,22 @@ export const Layout: React.FC<ILayoutProps> = ({children}) => {
     <Wrapper>
       <AppFrame>
         <Header
-          isMobile={isMobile()}
-          sidebarOpen={drawerOpened}
-          toggleDrawer={toggleLeftDrawerState}
+          isMobile={ isMobile() }
+          sidebarOpen={ drawerOpened }
+          toggleDrawer={ toggleLeftDrawerState }
         />
 
         <Sidebar
-          isMobile={isMobile()}
-          sidebarOpen={drawerOpened}
-          toggleDrawer={toggleLeftDrawerState}
+          isMobile={ isMobile() }
+          sidebarOpen={ drawerOpened }
+          toggleDrawer={ toggleLeftDrawerState }
         />
 
         <MainContent
-          isDesktop={!isMobile()}
-          leftDrawerOpen={drawerOpened}
+          isDesktop={ !isMobile() }
+          leftDrawerOpen={ drawerOpened }
         >
-          {children}
+          { children }
         </MainContent>
       </AppFrame>
     </Wrapper>

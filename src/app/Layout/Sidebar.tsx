@@ -137,7 +137,7 @@ export const Sidebar: FC<ISidebarProps> = ({ sidebarOpen, isMobile, toggleDrawer
     title: 'How to Play',
     to   : '/rules'
   }];
-  
+
   const secondaryMenu: IMenuItem[] = [{
     title: 'Help',
     to   : '/help'
@@ -148,13 +148,13 @@ export const Sidebar: FC<ISidebarProps> = ({ sidebarOpen, isMobile, toggleDrawer
     title: 'Manage users',
     to   : '/manage-users'
   }];
-  
+
   const onItemSelected = useCallback(() => {
     if (isMobile) {
       toggleDrawer();
     }
   }, [isMobile, toggleDrawer]);
-  
+
   const SidebarContent = () => (
     <Wrapper> <SidebarHeader>
       { isMobile ? (
@@ -166,7 +166,7 @@ export const Sidebar: FC<ISidebarProps> = ({ sidebarOpen, isMobile, toggleDrawer
         </IconButton>
       ) : (<StyledGameLogo/>) }
     </SidebarHeader>
-      
+
       <Section>
         { primaryMenu.map(({ to, title, icon }, index) => (
           <NavLink
@@ -181,9 +181,9 @@ export const Sidebar: FC<ISidebarProps> = ({ sidebarOpen, isMobile, toggleDrawer
           </NavLink>
         )) }
       </Section>
-      
+
       <Separator/>
-      
+
       <Section>
         { secondaryMenu.map(({ to, title }, index) => (
           <NavLink
@@ -200,7 +200,7 @@ export const Sidebar: FC<ISidebarProps> = ({ sidebarOpen, isMobile, toggleDrawer
       </Section>
     </Wrapper>
   );
-  
+
   return isMobile ? (
     <StyledSwipeableDrawer
       anchor="left"
@@ -213,12 +213,12 @@ export const Sidebar: FC<ISidebarProps> = ({ sidebarOpen, isMobile, toggleDrawer
       <SidebarContent/>
     </StyledSwipeableDrawer>
   ) : (
-     <StyledDrawer
-       open={ sidebarOpen }
-       variant="persistent"
-       anchor="left"
-     >
-       <SidebarContent/>
-     </StyledDrawer>
-  );
+           <StyledDrawer
+             open={ sidebarOpen }
+             variant="persistent"
+             anchor="left"
+           >
+             <SidebarContent/>
+           </StyledDrawer>
+         );
 };
