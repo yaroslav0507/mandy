@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState }                  from '../../../store';
-import { IPlayer, Player } from '../models/Player';
+import { IPlayer, Player }            from '../models/Player';
+import { IChip }                      from '../models/Chip';
 
 interface IMapCoords {
   x: number;
@@ -37,7 +38,7 @@ export const map = [
 
 export const isFieldAccessible = (x: number, y: number) => !!map[x][y];
 
-const players = [
+const initialPlayers = [
   new Player({
     id: '1',
     active: true,
@@ -88,20 +89,24 @@ const players = [
   })
 ]
 
-const chips: IChipsCoordinates = {};
+const generateChipsPositionMap = (players: IPlayer[] = initialPlayers) => {
+  const chips: IChipsCoordinates = {};
 
-players.forEach((player) => {
-  player.chips.forEach(({ x, y }) => {
-    chips[x] = {
-      ...chips[x],
-      [y]: player
-    }
-  })
-});
+  players.forEach((player) => {
+    player.chips.forEach(({ x, y }) => {
+      chips[x] = {
+        ...chips[x],
+        [y]: player
+      }
+    })
+  });
+
+  return chips;
+}
 
 const initialState: IMapState = JSON.parse(JSON.stringify({
-  chips,
-  players
+  players: initialPlayers,
+  chips: generateChipsPositionMap(),
 }));
 
 export const boardSlice = createSlice({
@@ -118,30 +123,20 @@ export const boardSlice = createSlice({
       const { selected } = state;
 
       if (selected) {
-        const { x, y } = action.payload;
         const player = state.chips[selected.x][selected.y];
 
-        player.chips = player.chips.map(item => {
-          if (item.x === selected.x && item.y === selected.y) {
-            return { x, y };
-          } else {
-            return item;
-          }
-        });
+        const { x, y } = action.payload;
 
-        state.players.forEach((item, index) => {
-          if (item.id === player.id) {
-            state.players[index].chips = player.chips;
-          }
-        });
+        const replaceChipPosition = (item: IChip) => (item.x === selected.x && item.y === selected.y) ? ({ x, y }) : item;
 
-        state.chips[x] = {
-          ...state.chips[x],
-          [y]: JSON.parse(JSON.stringify(player))
-        };
+        const players = state.players.map((item) => (player && item.id === player.id) ?  {
+          ...player,
+          chips: player.chips.map(replaceChipPosition)
+        } : item);
 
-        delete state.chips[selected.x][selected.y];
-        delete state.selected;
+        state.chips = generateChipsPositionMap(players);
+        state.players = players;
+        state.selected = undefined;
       }
     }
   }
@@ -152,5 +147,6 @@ export const { selectChip, deselectChip, moveChip } = boardSlice.actions
 
 export const selectActiveCoords = (state: RootState) => state.board.chips;
 export const selectCurrentChip = (state: RootState) => state.board.selected;
+export const selectPlayers = (state: RootState) => state.board.players;
 
 export default boardSlice.reducer

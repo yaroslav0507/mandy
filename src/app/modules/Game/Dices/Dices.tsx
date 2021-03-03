@@ -24,15 +24,13 @@ const DicesLayer = styled.div<ISizeProp>`${ ({ size }) => css`
   cursor: pointer;
 ` }`;
 
-export const Dices: FC = () => {
-  const angles = useSelector(selectDicesAngles);
-  const [size, setSize] = useState(85);
-  const dispatch = useAppDispatch();
+interface IDicesProps {
+  size: number;
+}
 
-  const handleSizeCheck = () => {
-    const el: any = document.getElementsByClassName('field')[0];
-    setSize(el && el.offsetHeight);
-  }
+export const Dices: FC<IDicesProps> = ({size}) => {
+  const angles = useSelector(selectDicesAngles);
+  const dispatch = useAppDispatch();
 
   const setDicesToResultValues = () => {
     const dices: any = document.getElementsByClassName('dice');
@@ -46,20 +44,8 @@ export const Dices: FC = () => {
   }
 
   useEffect(() => {
-    handleSizeCheck();
-  }, []);
-
-  useEffect(() => {
     setTimeout(() => setDicesToResultValues());
   }, [angles]);
-
-  useEffect(() => {
-    window.addEventListener('resize', () => handleSizeCheck());
-
-    return () => {
-      window.removeEventListener('resize', () => handleSizeCheck());
-    };
-  }, [size, window.innerWidth]);
 
   return (
     <DicesLayer

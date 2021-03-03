@@ -1,11 +1,11 @@
-import React, { FC } from 'react';
-import styled        from 'styled-components';
-import { theme }     from '../../../../styles';
-import { Grid }      from '@material-ui/core';
-import { Chip }      from './components/Chip';
-import { Field }     from './components/Field';
-import { IChip }     from '../models/Chip';
-import { Dices }     from '../Dices/Dices';
+import React, { FC, useEffect, useState } from 'react';
+import styled                             from 'styled-components';
+import { theme }                          from '../../../../styles';
+import { Grid }                           from '@material-ui/core';
+import { Chip, ChipWrapper }              from './components/Chip';
+import { Field }                          from './components/Field';
+import { IChip }                          from '../models/Chip';
+import { Dices }                          from '../Dices/Dices';
 import {
   deselectChip,
   isFieldAccessible,
@@ -13,12 +13,10 @@ import {
   moveChip,
   selectActiveCoords,
   selectChip,
-  selectCurrentChip
-}                    from './boardReducer';
-import {
-  useAppDispatch,
-  useAppSelector
-}                    from '../../../hooks';
+  selectCurrentChip,
+  selectPlayers
+}                                         from './boardReducer';
+import { useAppDispatch, useAppSelector } from '../../../hooks';
 
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
@@ -45,18 +43,24 @@ const Row = styled.div`
   width: ${ 100 / 13 }%;
 `;
 
+const gameBoardId = 'game-board';
+
 export const Board: FC = () => {
   const selectedChip = useAppSelector(selectCurrentChip);
   const boardState = useAppSelector(selectActiveCoords);
+  const players = useAppSelector(selectPlayers);
   const dispatch = useAppDispatch();
+  const [size, setSize] = useState(85);
 
   const isFieldOccupied = (x: number, y: number) => boardState[x] && boardState[x][y];
   const isChipSelected = (chip: IChip) => !!selectedChip && chip.x === selectedChip.x && chip.y === selectedChip.y;
 
   const onFieldClick = (x: number, y: number) => {
     if (selectedChip) {
-      if (isFieldAccessible(x, y) && !isFieldOccupied(x, y)) {
+      if (isFieldAccessible(x, y)) {
         dispatch(moveChip({ x, y }));
+      } else if (isFieldOccupied(x, y)) {
+        dispatch(selectChip({ x, y }));
       } else {
         dispatch(deselectChip())
       }
@@ -65,9 +69,35 @@ export const Board: FC = () => {
     }
   }
 
+  const chipStyleCoordinates = (chip: IChip) => {
+    const x = chip.x * size;
+    const y = chip.y * size;
+    return `translate(${ x }px, ${ y }px)`;
+  }
+
+  const handleSizeCheck = () => {
+    const el: any = document.getElementById(gameBoardId);
+    const boardHeight = el && el.offsetHeight;
+    const fieldSize = boardHeight / 13;
+    setSize(fieldSize);
+  }
+
+  useEffect(() => {
+    handleSizeCheck();
+  }, []);
+
+  useEffect(() => {
+    window.addEventListener('resize', () => handleSizeCheck());
+
+    return () => {
+      window.removeEventListener('resize', () => handleSizeCheck());
+    };
+  }, [size, window.innerWidth]);
+
+
   return (
     <BoardWrapper item>
-      <GameBoard>
+      <GameBoard id={ gameBoardId }>
         { map.map((row, x) => (
           <Row key={ x }>
             { row.map((field, y) => {
@@ -81,18 +111,30 @@ export const Board: FC = () => {
                   selected={ isChipSelected({ x, y }) }
                   withChip={ !!player }
                   onClick={ () => onFieldClick(x, y) }
-                >
-                  { player ? (
-                    <Chip color={ player.color }/>
-                  ) : null }
-                </Field>
+                />
               )
             }) }
           </Row>
         )) }
+
+        { players.map(({ color, chips }) => chips.map((chip, index) => (
+          <ChipWrapper
+            key={ index }
+            size={ size }
+            style={ { 'transform': chipStyleCoordinates(chip) } }
+            color={ color }
+            selected={ isChipSelected(chip) }
+            onClick={ () => onFieldClick(chip.x, chip.y) }
+          >
+            <Chip
+              key={ chip.x + chip.y }
+              className="animate-movement"
+            />
+          </ChipWrapper>
+        ))) }
       </GameBoard>
 
-      <Dices/>
+      <Dices size={ size }/>
     </BoardWrapper>
   );
 };
