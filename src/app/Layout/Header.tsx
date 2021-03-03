@@ -27,7 +27,8 @@ const Section = styled.div`
   display: flex;
   align-items: center;
   min-width: 100px;
-  justify-content: space-between;
+  justify-content: flex-end;
+  padding-right: 5px;
 `;
 
 const LogoSection = styled(Section)``;
@@ -83,12 +84,6 @@ const MenuAnchor = styled.div`
   visibility: hidden;
   height: 0;
   width: 0;
-`;
-
-const DiceIcon = styled.img`
-  width: 40px;
-  border: 2px solid #fff;
-  border-radius: 100%;
 `;
 
 interface IHeaderOwnProps {

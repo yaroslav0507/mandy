@@ -1,12 +1,24 @@
-import React, { FC }                       from 'react';
-import styled                              from 'styled-components';
-import { theme }                           from '../../../../styles';
-import { Grid }                            from '@material-ui/core';
-import { fieldMap, IBoardChipCoordinates } from '../utils';
-import { Chip }                            from './components/Chip';
-import { Field }                           from './components/Field';
-import { IChip }                           from '../models/Chip';
-import { Dices }                           from '../Dices/Dices';
+import React, { FC } from 'react';
+import styled        from 'styled-components';
+import { theme }     from '../../../../styles';
+import { Grid }      from '@material-ui/core';
+import { Chip }      from './components/Chip';
+import { Field }     from './components/Field';
+import { IChip }     from '../models/Chip';
+import { Dices }     from '../Dices/Dices';
+import {
+  deselectChip,
+  isFieldAccessible,
+  map,
+  moveChip,
+  selectActiveCoords,
+  selectChip,
+  selectCurrentChip
+}                    from './boardReducer';
+import {
+  useAppDispatch,
+  useAppSelector
+}                    from '../../../hooks';
 
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
@@ -33,31 +45,42 @@ const Row = styled.div`
   width: ${ 100 / 13 }%;
 `;
 
-interface IGageBoardProps {
-  boardState: IBoardChipCoordinates;
-  selectedChip?: IChip;
-  onChipSelected: (x: number, y: number) => void;
-}
+export const Board: FC = () => {
+  const selectedChip = useAppSelector(selectCurrentChip);
+  const boardState = useAppSelector(selectActiveCoords);
+  const dispatch = useAppDispatch();
 
-export const Board: FC<IGageBoardProps> = ({ boardState, selectedChip, onChipSelected }) => {
-  const chipSelected = (chip: IChip) => !!selectedChip && chip.x === selectedChip.x && chip.y === selectedChip.y;
+  const isFieldOccupied = (x: number, y: number) => boardState[x] && boardState[x][y];
+  const isChipSelected = (chip: IChip) => !!selectedChip && chip.x === selectedChip.x && chip.y === selectedChip.y;
+
+  const onFieldClick = (x: number, y: number) => {
+    if (selectedChip) {
+      if (isFieldAccessible(x, y) && !isFieldOccupied(x, y)) {
+        dispatch(moveChip({ x, y }));
+      } else {
+        dispatch(deselectChip())
+      }
+    } else if (isFieldOccupied(x, y)) {
+      dispatch(selectChip({ x, y }));
+    }
+  }
 
   return (
     <BoardWrapper item>
       <GameBoard>
-        { fieldMap.map((row, x) => (
+        { map.map((row, x) => (
           <Row key={ x }>
             { row.map((field, y) => {
-              const player = boardState[x] ? boardState[x][y] : null;
+              const player = isFieldOccupied(x, y);
 
               return (
                 <Field
                   key={ y }
                   className="field"
                   empty={ !field }
-                  selected={ chipSelected({ x, y }) }
+                  selected={ isChipSelected({ x, y }) }
                   withChip={ !!player }
-                  onClick={ () => player && onChipSelected(x, y) }
+                  onClick={ () => onFieldClick(x, y) }
                 >
                   { player ? (
                     <Chip color={ player.color }/>

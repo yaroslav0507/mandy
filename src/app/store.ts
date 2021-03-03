@@ -1,9 +1,11 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit';
 import { dicesSlice }                          from './modules/Game/Dices/dicesReducer';
+import { boardSlice }                          from './modules/Game/Board/boardReducer';
 
 export const store = configureStore({
   reducer: {
-    dices: dicesSlice.reducer
+    dices: dicesSlice.reducer,
+    board: boardSlice.reducer
   },
 });
 
