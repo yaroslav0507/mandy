@@ -38,13 +38,13 @@ export const map = [
 
 export const isFieldAccessible = (x: number, y: number) => !!map[x][y];
 
-const initialPlayers = [
+const initialPlayers: IPlayer[] = [
   new Player({
-    id: '1',
+    id    : '1',
     active: true,
-    name : 'Player 1',
-    color: '#fdcb6e',
-    chips: [
+    name  : 'Player 1',
+    color : '#fdcb6e',
+    chips : [
       { x: 5, y: 4 },
       { x: 5, y: 3 },
       { x: 5, y: 2 },
@@ -52,11 +52,11 @@ const initialPlayers = [
     ]
   }),
   new Player({
-    id: '2',
+    id    : '2',
     active: true,
-    name : 'Player 2',
-    color: '#00b894',
-    chips: [
+    name  : 'Player 2',
+    color : '#00b894',
+    chips : [
       { x: 7, y: 8 },
       { x: 7, y: 9 },
       { x: 7, y: 10 },
@@ -64,11 +64,11 @@ const initialPlayers = [
     ]
   }),
   new Player({
-    id: '3',
+    id    : '3',
     active: true,
-    name : 'Player 3',
-    color: '#0984e3',
-    chips: [
+    name  : 'Player 3',
+    color : '#0984e3',
+    chips : [
       { x: 1, y: 7 },
       { x: 2, y: 7 },
       { x: 3, y: 7 },
@@ -76,11 +76,11 @@ const initialPlayers = [
     ]
   }),
   new Player({
-    id: '4',
+    id    : '4',
     active: true,
-    name : 'Player 4',
-    color: '#d63031',
-    chips: [
+    name  : 'Player 4',
+    color : '#d63031',
+    chips : [
       { x: 8, y: 5 },
       { x: 9, y: 5 },
       { x: 10, y: 5 },
@@ -89,7 +89,13 @@ const initialPlayers = [
   })
 ]
 
-const generateChipsPositionMap = (players: IPlayer[] = initialPlayers) => {
+const defaultChipPosition = (userId: string, index: number) => {
+  const user = initialPlayers.find(({id}) => id === userId);
+  const defaultChipPosition = user && user.chips && user.chips[index];
+  return { ...defaultChipPosition };
+}
+
+const generateChipsPositionMap = (players: IPlayer[] = initialPlayers): IChipsCoordinates => {
   const chips: IChipsCoordinates = {};
 
   players.forEach((player) => {
@@ -106,7 +112,7 @@ const generateChipsPositionMap = (players: IPlayer[] = initialPlayers) => {
 
 const initialState: IMapState = JSON.parse(JSON.stringify({
   players: initialPlayers,
-  chips: generateChipsPositionMap(),
+  chips  : generateChipsPositionMap(),
 }));
 
 export const boardSlice = createSlice({
@@ -121,22 +127,37 @@ export const boardSlice = createSlice({
     },
     moveChip(state, action: PayloadAction<IMapCoords>) {
       const { selected } = state;
+      const selectedChipPlayer = selected && state.chips[selected.x][selected.y];
 
-      if (selected) {
-        const player = state.chips[selected.x][selected.y];
-
+      if (selected && selectedChipPlayer) {
         const { x, y } = action.payload;
+        const targetChipPlayer = state.chips[x] && state.chips[x][y];
 
-        const replaceChipPosition = (item: IChip) => (item.x === selected.x && item.y === selected.y) ? ({ x, y }) : item;
+        const replaceChipPosition = (item: IChip) =>
+          (item.x === selected.x && item.y === selected.y) ? ({ x, y }) : item;
 
-        const players = state.players.map((item) => (player && item.id === player.id) ?  {
-          ...player,
-          chips: player.chips.map(replaceChipPosition)
-        } : item);
+        const resetChipPosition = (item: IChip, index: number) =>
+          (item.x === x && item.y === y) ? defaultChipPosition(targetChipPlayer.id, index) : item;
+
+        const players: IPlayer[] = state.players.map((player) => {
+          if (player.id === selectedChipPlayer.id) {
+            return {
+              ...player,
+              chips: selectedChipPlayer.chips.map(replaceChipPosition)
+            } as IPlayer;
+          } else if (targetChipPlayer && player.id === targetChipPlayer.id) {
+            return {
+              ...player,
+              chips: targetChipPlayer.chips.map(resetChipPosition)
+            } as IPlayer;
+          } else {
+            return player;
+          }
+        });
 
         state.chips = generateChipsPositionMap(players);
         state.players = players;
-        state.selected = undefined;
+        state.selected = { x,  y };
       }
     }
   }

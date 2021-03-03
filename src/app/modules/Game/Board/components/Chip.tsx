@@ -18,6 +18,18 @@ const bounce = keyframes`
   }
 `;
 
+const movement = keyframes`
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+`;
+
 export const Chip = styled.div`
   width: 70%;
   height: 70%;
@@ -31,6 +43,7 @@ export const Chip = styled.div`
   margin: auto;
   border: 3px solid #00000030;
   transition: ease .3s all;
+  animation: ${movement} .3s linear 1;
 `;
 
 export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, color, selected }) => css`
@@ -38,7 +51,7 @@ export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, color, sele
   height: ${size}px;
   position: absolute;
   transition: ease .3s all;
-  
+
   ${Chip} {
     background-color: ${color};
   }
@@ -52,6 +65,8 @@ export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, color, sele
   }
   
   ${selected && css`
+    z-index: 1;
+
     ${ Chip } {
       box-shadow: 0 0 0 3px #ffffffde;
       animation: ${bounce} 2s linear infinite;

@@ -59,10 +59,8 @@ export const Board: FC = () => {
     if (selectedChip) {
       if (isFieldAccessible(x, y)) {
         dispatch(moveChip({ x, y }));
-      } else if (isFieldOccupied(x, y)) {
-        dispatch(selectChip({ x, y }));
       } else {
-        dispatch(deselectChip())
+        dispatch(deselectChip());
       }
     } else if (isFieldOccupied(x, y)) {
       dispatch(selectChip({ x, y }));
@@ -126,10 +124,7 @@ export const Board: FC = () => {
             selected={ isChipSelected(chip) }
             onClick={ () => onFieldClick(chip.x, chip.y) }
           >
-            <Chip
-              key={ chip.x + chip.y }
-              className="animate-movement"
-            />
+            <Chip key={ chip.x + chip.y }/>
           </ChipWrapper>
         ))) }
       </GameBoard>
