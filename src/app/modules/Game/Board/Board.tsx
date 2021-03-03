@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useState } from 'react';
-import styled                             from 'styled-components';
+import styled, { css }                    from 'styled-components';
 import { theme }                          from '../../../../styles';
 import { Grid }                           from '@material-ui/core';
 import { Chip, ChipWrapper }              from './components/Chip';
@@ -26,6 +26,7 @@ const BoardWrapper = styled(Grid)`&& {
 }`;
 
 const GameBoard = styled.div`
+  position: relative;
   font-size: 16px;
   color: ${ theme.colors.info };
   width: 100%;
@@ -38,6 +39,67 @@ const GameBoard = styled.div`
     padding-bottom: 100%;
   }
 `;
+
+const Line1 = styled.div`
+  position: absolute;
+  width: 1px;
+  background-color: #39e991;
+  
+   &:after {
+      content: '';
+      position: absolute;
+      border: solid black;
+      border-width: 0 1px 1px 0;
+      border-color: #39e991;
+      display: inline-block;
+      padding: 4px;
+      transform: rotate(45deg);
+      left: -4px;
+      bottom: 0;
+    }
+`;
+
+const Line2 = styled(Line1)`
+  transform-origin: top;
+  transform: rotate(-90deg);
+`;
+
+const Arc = styled.div`
+  position: abolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 100%;
+  border: 1px solid #39e991;
+`
+
+const GameBoardLegend = styled(GameBoard)<{size: number}>`${ ({ size }) => css`
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  // pointer-events: none;
+  
+  ${Line1} {
+    height: ${size * 1.5}px;
+    top: ${size * 1.5}px;
+    left: ${size * 4.5 - 2}px;
+  }
+  
+  ${Line2} {
+    height: ${size * 1.5}px;
+    left: ${size * 1.5}px;
+    top: ${size * 4.5}px;
+    width: 1px;
+  }
+`}`;
+
+const GameBoardLegendQuarter = styled.div<{index: number}>`${({index}) => css`
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  float: left;
+`}`;
 
 const Row = styled.div`
   width: ${ 100 / 13 }%;
@@ -56,14 +118,24 @@ export const Board: FC = () => {
   const isChipSelected = (chip: IChip) => !!selectedChip && chip.x === selectedChip.x && chip.y === selectedChip.y;
 
   const onFieldClick = (x: number, y: number) => {
+    const fieldIsOccupied = isFieldOccupied(x, y);
+    const fieldIsAccessible = isFieldAccessible(x, y);
+    const move = moveChip({ x, y });
+    const select = selectChip({ x, y });
+    const deselect = deselectChip();
+
     if (selectedChip) {
-      if (isFieldAccessible(x, y)) {
-        dispatch(moveChip({ x, y }));
+      if (fieldIsAccessible) {
+        dispatch(move);
       } else {
-        dispatch(deselectChip());
+        if (fieldIsOccupied) {
+          dispatch(select);
+        } else {
+          dispatch(deselect);
+        }
       }
-    } else if (isFieldOccupied(x, y)) {
-      dispatch(selectChip({ x, y }));
+    } else if (fieldIsOccupied) {
+      dispatch(select);
     }
   }
 
@@ -114,6 +186,16 @@ export const Board: FC = () => {
             }) }
           </Row>
         )) }
+
+        <GameBoardLegend size={size}>
+          {players.map((player, index) => (
+            <GameBoardLegendQuarter index={index}>
+              <Line1/>
+              <Arc/>
+              <Line2/>
+            </GameBoardLegendQuarter>
+          ))}
+        </GameBoardLegend>
 
         { players.map(({ color, chips }) => chips.map((chip, index) => (
           <ChipWrapper

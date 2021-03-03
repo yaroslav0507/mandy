@@ -22,18 +22,7 @@ export const Game: FC = () => {
             item
             md={ 12 }
           >
-            Selected
-
-            {/*{ selectedChip ? (*/ }
-            {/*  <>*/ }
-            {/*    <div>*/ }
-            {/*      x: { selectedChip.x }*/ }
-            {/*    </div>*/ }
-            {/*    <div>*/ }
-            {/*      y: { selectedChip.y }*/ }
-            {/*    </div>*/ }
-            {/*  </>*/ }
-            {/*) : null }*/ }
+            {''}
           </Grid>
         </Grid>
       </Grid>

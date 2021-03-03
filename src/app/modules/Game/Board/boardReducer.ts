@@ -127,37 +127,35 @@ export const boardSlice = createSlice({
     },
     moveChip(state, action: PayloadAction<IMapCoords>) {
       const { selected } = state;
-      const selectedChipPlayer = selected && state.chips[selected.x][selected.y];
+      const { x, y } = action.payload;
+      const selectedPlayer = selected && state.chips[selected.x][selected.y];
+      const targetPlayer = state.chips[x] && state.chips[x][y];
 
-      if (selected && selectedChipPlayer) {
-        const { x, y } = action.payload;
-        const targetChipPlayer = state.chips[x] && state.chips[x][y];
-
+      if (selected && selectedPlayer) {
         const replaceChipPosition = (item: IChip) =>
           (item.x === selected.x && item.y === selected.y) ? ({ x, y }) : item;
-
         const resetChipPosition = (item: IChip, index: number) =>
-          (item.x === x && item.y === y) ? defaultChipPosition(targetChipPlayer.id, index) : item;
+          (item.x === x && item.y === y) ? defaultChipPosition(targetPlayer.id, index) : item;
 
         const players: IPlayer[] = state.players.map((player) => {
-          if (player.id === selectedChipPlayer.id) {
+          if (player.id === selectedPlayer.id) {
             return {
               ...player,
-              chips: selectedChipPlayer.chips.map(replaceChipPosition)
+              chips: selectedPlayer.chips.map(replaceChipPosition)
             } as IPlayer;
-          } else if (targetChipPlayer && player.id === targetChipPlayer.id) {
+          } else if (targetPlayer && player.id === targetPlayer.id) {
             return {
               ...player,
-              chips: targetChipPlayer.chips.map(resetChipPosition)
+              chips: targetPlayer.chips.map(resetChipPosition)
             } as IPlayer;
           } else {
             return player;
           }
         });
 
-        state.chips = generateChipsPositionMap(players);
-        state.players = players;
         state.selected = { x,  y };
+        state.players = players;
+        state.chips = generateChipsPositionMap(players);
       }
     }
   }

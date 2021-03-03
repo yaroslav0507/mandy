@@ -42,8 +42,8 @@ export const Chip = styled.div`
   bottom: 0;
   margin: auto;
   border: 3px solid #00000030;
-  transition: ease .3s all;
-  animation: ${movement} .3s linear 1;
+  transition: ease .5s all;
+  animation: ${movement} .5s linear 1;
 `;
 
 export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, color, selected }) => css`
@@ -69,7 +69,7 @@ export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, color, sele
 
     ${ Chip } {
       box-shadow: 0 0 0 3px #ffffffde;
-      animation: ${bounce} 2s linear infinite;
+      animation: ${bounce} 2s linear infinite, ${movement} .3s linear 1;
     }
   `}
 `}`;
