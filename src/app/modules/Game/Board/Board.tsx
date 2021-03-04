@@ -18,6 +18,9 @@ import {
 }                                         from './boardReducer';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
 
+const legendColor = '#2bb36f';
+const legendWidth = 3;
+
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
   position: relative;
@@ -40,66 +43,125 @@ const GameBoard = styled.div`
   }
 `;
 
-const Line1 = styled.div`
+const Line = styled.div`
   position: absolute;
-  width: 1px;
-  background-color: #39e991;
+  width: ${legendWidth}px;
+  background: linear-gradient(#2e323a, ${legendColor}, #0f6b5c);
   
-   &:after {
-      content: '';
-      position: absolute;
-      border: solid black;
-      border-width: 0 1px 1px 0;
-      border-color: #39e991;
-      display: inline-block;
-      padding: 4px;
-      transform: rotate(45deg);
-      left: -4px;
-      bottom: 0;
-    }
+  &:after {
+     content: '';
+     position: absolute;
+     border: solid black;
+     border-width: 0 ${legendWidth}px ${legendWidth}px 0;
+     border-radius: 0 ${legendWidth}px;
+     border-color: ${legendColor};
+     display: inline-block;
+     padding: 4px;
+     transform: rotate(45deg);
+     left: -4px;
+     bottom: 0;
+  }
 `;
 
-const Line2 = styled(Line1)`
+const Line2 = styled(Line)`
   transform-origin: top;
   transform: rotate(-90deg);
 `;
 
+const ArcWrapper = styled.div`
+   position: relative;
+   
+   &:before, &:after {
+      content: '';
+      position: absolute;
+      border: solid black;
+      border-width: 0 ${legendWidth}px ${legendWidth}px 0;
+      border-radius: 0 ${legendWidth}px;
+      border-color: ${legendColor};
+      display: inline-block;
+      padding: 4px;
+      z-index: 1;
+   }
+   
+   &:before {
+      transform: rotate(135deg);
+      bottom: -4px;
+   }
+   
+   &:after {
+      transform: rotate(-135deg);
+      top: 0;
+      right: -4px;
+   }
+`;
+
 const Arc = styled.div`
-  position: abolute;
   width: 100%;
   height: 100%;
-  border-radius: 100%;
-  border: 1px solid #39e991;
-`
+  position: relative;
+  overflow: hidden;
 
-const GameBoardLegend = styled(GameBoard)<{size: number}>`${ ({ size }) => css`
+  &:after, &:before {
+    content: '';
+    position: absolute;
+    border-radius: 100%;
+  }
+  
+  &:after {
+    right: 2px;
+    bottom: 2px;
+    background: #262a33;
+  }
+
+  &:before {
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, #000, ${legendColor}, #000);
+  }
+`;
+
+const GameBoardLegendQuarter = styled.div<{ index: number }>`${ ({ index }) => css`
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  float: left;
+  transform-origin: right bottom;
+  transform: rotate(${ index * 90 }deg);
+` }`;
+
+const GameBoardLegend = styled(GameBoard)<{ size: number }>`${ ({ size }) => css`
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   position: absolute;
-  // pointer-events: none;
+  color: ${legendColor};
   
-  ${Line1} {
-    height: ${size * 1.5}px;
-    top: ${size * 1.5}px;
-    left: ${size * 4.5 - 2}px;
+  ${ Line }  {
+    height: ${ size * 2 }px;
+    top: ${ size * 1.5 }px;
+    left: ${ size * 4.5 }px;
   }
   
-  ${Line2} {
-    height: ${size * 1.5}px;
-    left: ${size * 1.5}px;
-    top: ${size * 4.5}px;
-    width: 1px;
+  ${ Line2 } {
+    height: ${ size * 2 }px;
+    left: ${ size * 1.5 }px;
+    top: ${ size * 4.5 }px;
   }
-`}`;
-
-const GameBoardLegendQuarter = styled.div<{index: number}>`${({index}) => css`
-  position: absolute;
-  width: 50%;
-  height: 50%;
-  float: left;
-`}`;
+  
+  ${ ArcWrapper } {
+    margin: ${ size * 1.5 }px;
+    width: ${ size * 2 }px;
+    height: ${ size * 2 }px;
+    
+    ${ Arc } {
+      &:after, &:before {
+        width: ${ size * 4 }px;
+        height: ${ size * 4 }px;
+      }
+    }
+  }
+` }`;
 
 const Row = styled.div`
   width: ${ 100 / 13 }%;
@@ -168,11 +230,22 @@ export const Board: FC = () => {
   return (
     <BoardWrapper item>
       <GameBoard id={ gameBoardId }>
+        <GameBoardLegend size={ size }>
+          { players.map((player, index) => (
+            <GameBoardLegendQuarter index={ index }>
+              <Line/>
+              <ArcWrapper>
+                <Arc/>
+              </ArcWrapper>
+              <Line2/>
+            </GameBoardLegendQuarter>
+          )) }
+        </GameBoardLegend>
+
         { map.map((row, x) => (
           <Row key={ x }>
             { row.map((field, y) => {
               const player = isFieldOccupied(x, y);
-
               return (
                 <Field
                   key={ y }
@@ -186,16 +259,6 @@ export const Board: FC = () => {
             }) }
           </Row>
         )) }
-
-        <GameBoardLegend size={size}>
-          {players.map((player, index) => (
-            <GameBoardLegendQuarter index={index}>
-              <Line1/>
-              <Arc/>
-              <Line2/>
-            </GameBoardLegendQuarter>
-          ))}
-        </GameBoardLegend>
 
         { players.map(({ color, chips }) => chips.map((chip, index) => (
           <ChipWrapper
