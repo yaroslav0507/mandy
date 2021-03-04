@@ -4,17 +4,16 @@ import { theme }                          from '../../../../styles';
 import { Grid }                           from '@material-ui/core';
 import { Chip, ChipWrapper }              from './components/Chip';
 import { Field }                          from './components/Field';
-import { IChip }                          from '../models/Chip';
 import { Dices }                          from '../Dices/Dices';
 import {
   deselectChip,
   isFieldAccessible,
   map,
   moveChip,
-  selectActiveCoords,
+  selectActiveChips,
   selectChip,
-  selectCurrentChip,
-  selectPlayers
+  selectChipsMap,
+  selectCurrentChip
 }                                         from './boardReducer';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
 
@@ -45,16 +44,16 @@ const GameBoard = styled.div`
 
 const Line = styled.div`
   position: absolute;
-  width: ${legendWidth}px;
-  background: linear-gradient(#2e323a, ${legendColor}, #0f6b5c);
+  width: ${ legendWidth }px;
+  background: linear-gradient(#2e323a, ${ legendColor }, #0f6b5c);
   
   &:after {
      content: '';
      position: absolute;
      border: solid black;
-     border-width: 0 ${legendWidth}px ${legendWidth}px 0;
-     border-radius: 0 ${legendWidth}px;
-     border-color: ${legendColor};
+     border-width: 0 ${ legendWidth }px ${ legendWidth }px 0;
+     border-radius: 0 ${ legendWidth }px;
+     border-color: ${ legendColor };
      display: inline-block;
      padding: 4px;
      transform: rotate(45deg);
@@ -75,9 +74,9 @@ const ArcWrapper = styled.div`
       content: '';
       position: absolute;
       border: solid black;
-      border-width: 0 ${legendWidth}px ${legendWidth}px 0;
-      border-radius: 0 ${legendWidth}px;
-      border-color: ${legendColor};
+      border-width: 0 ${ legendWidth }px ${ legendWidth }px 0;
+      border-radius: 0 ${ legendWidth }px;
+      border-color: ${ legendColor };
       display: inline-block;
       padding: 4px;
       z-index: 1;
@@ -116,7 +115,7 @@ const Arc = styled.div`
   &:before {
     right: 0;
     bottom: 0;
-    background: linear-gradient(45deg, #000, ${legendColor}, #000);
+    background: linear-gradient(45deg, #000, ${ legendColor }, #000);
   }
 `;
 
@@ -135,7 +134,7 @@ const GameBoardLegend = styled(GameBoard)<{ size: number }>`${ ({ size }) => css
   width: 100%;
   height: 100%;
   position: absolute;
-  color: ${legendColor};
+  color: ${ legendColor };
   
   ${ Line }  {
     height: ${ size * 2 }px;
@@ -170,23 +169,23 @@ const Row = styled.div`
 const gameBoardId = 'game-board';
 
 export const Board: FC = () => {
-  const selectedChip = useAppSelector(selectCurrentChip);
-  const boardState = useAppSelector(selectActiveCoords);
-  const players = useAppSelector(selectPlayers);
+  const [selectedX, selectedY] = useAppSelector(selectCurrentChip);
+  const chips = useAppSelector(selectActiveChips);
+  const boardState = useAppSelector(selectChipsMap);
   const dispatch = useAppDispatch();
   const [size, setSize] = useState(85);
 
   const isFieldOccupied = (x: number, y: number) => boardState[x] && boardState[x][y];
-  const isChipSelected = (chip: IChip) => !!selectedChip && chip.x === selectedChip.x && chip.y === selectedChip.y;
+  const isChipSelected = (x: number, y: number) => x === selectedX && y === selectedY;
 
   const onFieldClick = (x: number, y: number) => {
     const fieldIsOccupied = isFieldOccupied(x, y);
     const fieldIsAccessible = isFieldAccessible(x, y);
-    const move = moveChip({ x, y });
-    const select = selectChip({ x, y });
+    const move = moveChip([x, y]);
+    const select = selectChip([x, y]);
     const deselect = deselectChip();
 
-    if (selectedChip) {
+    if (selectedX !== undefined) {
       if (fieldIsAccessible) {
         dispatch(move);
       } else {
@@ -199,12 +198,6 @@ export const Board: FC = () => {
     } else if (fieldIsOccupied) {
       dispatch(select);
     }
-  }
-
-  const chipStyleCoordinates = (chip: IChip) => {
-    const x = chip.x * size;
-    const y = chip.y * size;
-    return `translate(${ x }px, ${ y }px)`;
   }
 
   const handleSizeCheck = () => {
@@ -226,13 +219,12 @@ export const Board: FC = () => {
     };
   }, [size, window.innerWidth]);
 
-
   return (
     <BoardWrapper item>
       <GameBoard id={ gameBoardId }>
         <GameBoardLegend size={ size }>
-          { players.map((player, index) => (
-            <GameBoardLegendQuarter index={ index }>
+          { ['a', 'b', 'c', 'd'].map((sector: string, index: number) => (
+            <GameBoardLegendQuarter key={index} index={ index }>
               <Line/>
               <ArcWrapper>
                 <Arc/>
@@ -251,7 +243,7 @@ export const Board: FC = () => {
                   key={ y }
                   className="field"
                   empty={ !field }
-                  selected={ isChipSelected({ x, y }) }
+                  selected={ isChipSelected(x, y) }
                   withChip={ !!player }
                   onClick={ () => onFieldClick(x, y) }
                 />
@@ -260,18 +252,18 @@ export const Board: FC = () => {
           </Row>
         )) }
 
-        { players.map(({ color, chips }) => chips.map((chip, index) => (
+        {chips.map(({ color, current: [x, y] }, index) => (
           <ChipWrapper
             key={ index }
             size={ size }
-            style={ { 'transform': chipStyleCoordinates(chip) } }
+            style={ { 'transform': `translate(${ x * size }px, ${ y * size }px)` } }
             color={ color }
-            selected={ isChipSelected(chip) }
-            onClick={ () => onFieldClick(chip.x, chip.y) }
+            selected={ isChipSelected(x, y) }
+            onClick={ () => onFieldClick(x, y) }
           >
-            <Chip key={ chip.x + chip.y }/>
+            <Chip key={ x + y }/>
           </ChipWrapper>
-        ))) }
+        ))}
       </GameBoard>
 
       <Dices size={ size }/>

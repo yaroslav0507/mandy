@@ -1,22 +1,27 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState }                  from '../../../store';
-import { IPlayer, Player }            from '../models/Player';
-import { IChip }                      from '../models/Chip';
 
-interface IMapCoords {
-  x: number;
-  y: number;
+type TMapCoords = number[];
+
+export interface IChip {
+  team: number;
+  name: string;
+  color: string;
+  active: boolean;
+  current: number[];
+  start: number[];
+  home: number[][];
 }
 
 interface IMapState {
-  chips: IChipsCoordinates;
-  players: IPlayer[];
-  selected?: IMapCoords;
+  chips: IChip[];
+  map: IChipsCoordinates;
+  selected: TMapCoords;
 }
 
 export interface IChipsCoordinates {
   [x: string]: {
-    [y: string]: IPlayer;
+    [y: string]: IChip;
   }
 }
 
@@ -38,124 +43,104 @@ export const map = [
 
 export const isFieldAccessible = (x: number, y: number) => !!map[x][y];
 
-const initialPlayers: IPlayer[] = [
-  new Player({
-    id    : '1',
-    active: true,
-    name  : 'Player 1',
-    color : '#fdcb6e',
-    chips : [
-      { x: 5, y: 4 },
-      { x: 5, y: 3 },
-      { x: 5, y: 2 },
-      { x: 5, y: 1 },
-    ]
-  }),
-  new Player({
-    id    : '2',
-    active: true,
-    name  : 'Player 2',
-    color : '#00b894',
-    chips : [
-      { x: 7, y: 8 },
-      { x: 7, y: 9 },
-      { x: 7, y: 10 },
-      { x: 7, y: 11 },
-    ]
-  }),
-  new Player({
-    id    : '3',
-    active: true,
-    name  : 'Player 3',
-    color : '#0984e3',
-    chips : [
-      { x: 1, y: 7 },
-      { x: 2, y: 7 },
-      { x: 3, y: 7 },
-      { x: 4, y: 7 },
-    ]
-  }),
-  new Player({
-    id    : '4',
-    active: true,
-    name  : 'Player 4',
-    color : '#d63031',
-    chips : [
-      { x: 8, y: 5 },
-      { x: 9, y: 5 },
-      { x: 10, y: 5 },
-      { x: 11, y: 5 },
-    ]
-  })
-]
+const chips: IChip[] = [{
+  team  : 1,
+  active: true,
+  name  : 'Player 1',
+  color : '#fdcb6e',
+  chips : [[5, 4], [5, 3], [5, 2], [5, 1]],
+  home  : [[6, 4], [6, 3], [6, 2], [6, 1]]
+}, {
+  team  : 2,
+  active: true,
+  name  : 'Player 2',
+  color : '#00b894',
+  chips : [[7, 8], [7, 9], [7, 10], [7, 11]],
+  home  : [[6, 8], [6, 9], [6, 10], [6, 11]]
+}, {
+  team  : 3,
+  active: true,
+  name  : 'Player 3',
+  color : '#0984e3',
+  chips : [[1, 7], [2, 7], [3, 7], [4, 7]],
+  home  : [[1, 6], [2, 6], [3, 6], [4, 6]]
+}, {
+  team  : 4,
+  active: true,
+  name  : 'Player 4',
+  color : '#d63031',
+  chips : [[8, 5], [9, 5], [10, 5], [11, 5]],
+  home  : [[8, 6], [9, 6], [10, 6], [11, 6]]
+}].map(player => player.chips.map(chip => ({
+  team   : player.team,
+  name   : player.name,
+  color  : player.color,
+  active : player.active,
+  current: chip,
+  start  : chip,
+  home   : player.home
+}))).flat();
 
-const defaultChipPosition = (userId: string, index: number) => {
-  const user = initialPlayers.find(({id}) => id === userId);
-  const defaultChipPosition = user && user.chips && user.chips[index];
-  return { ...defaultChipPosition };
-}
+const generateChipsPositionMap = (items: IChip[] = chips): IChipsCoordinates => {
+  const chipsMap: IChipsCoordinates = {};
 
-const generateChipsPositionMap = (players: IPlayer[] = initialPlayers): IChipsCoordinates => {
-  const chips: IChipsCoordinates = {};
+  items.forEach((chip) => {
+    const [x, y] = chip.current;
 
-  players.forEach((player) => {
-    player.chips.forEach(({ x, y }) => {
-      chips[x] = {
-        ...chips[x],
-        [y]: player
-      }
-    })
+    chipsMap[x] = {
+      ...chipsMap[x],
+      [y]: chip
+    }
   });
 
-  return chips;
+  return chipsMap;
 }
 
 const initialState: IMapState = JSON.parse(JSON.stringify({
-  players: initialPlayers,
-  chips  : generateChipsPositionMap(),
+  chips: chips,
+  map  : generateChipsPositionMap(),
+  selected: []
 }));
 
 export const boardSlice = createSlice({
   name    : 'map',
   initialState,
   reducers: {
-    selectChip(state, action: PayloadAction<IMapCoords>) {
+    selectChip(state, action: PayloadAction<TMapCoords>) {
       state.selected = action.payload;
     },
     deselectChip(state) {
-      state.selected = undefined;
+      state.selected = [];
     },
-    moveChip(state, action: PayloadAction<IMapCoords>) {
-      const { selected } = state;
-      const { x, y } = action.payload;
-      const selectedPlayer = selected && state.chips[selected.x][selected.y];
-      const targetPlayer = state.chips[x] && state.chips[x][y];
+    moveChip(state, action: PayloadAction<TMapCoords>) {
+      const moveFrom = state.selected;
+      const [moveFromX, moveFromY] = moveFrom;
 
-      if (selected && selectedPlayer) {
-        const replaceChipPosition = (item: IChip) =>
-          (item.x === selected.x && item.y === selected.y) ? ({ x, y }) : item;
-        const resetChipPosition = (item: IChip, index: number) =>
-          (item.x === x && item.y === y) ? defaultChipPosition(targetPlayer.id, index) : item;
+      const moveTo = action.payload;
+      const [moveToX, moveToY] = action.payload;
 
-        const players: IPlayer[] = state.players.map((player) => {
-          if (player.id === selectedPlayer.id) {
-            return {
-              ...player,
-              chips: selectedPlayer.chips.map(replaceChipPosition)
-            } as IPlayer;
-          } else if (targetPlayer && player.id === targetPlayer.id) {
-            return {
-              ...player,
-              chips: targetPlayer.chips.map(resetChipPosition)
-            } as IPlayer;
-          } else {
-            return player;
-          }
+      const currentChip = moveFrom && state.map[moveFromX][moveFromY];
+      const targetChip = state.map[moveToX] && state.map[moveToX][moveToY];
+
+      if (moveFrom && currentChip) {
+        const moveChip = ({ current  }: IChip) =>
+          (current[0] === moveFromX && current[1] === moveFromY) ? moveTo : current;
+
+        const sendToStart = ({ current }: IChip) =>
+          (current[0] === moveToX && current[1] === moveToY) ? targetChip.start : current;
+
+        const chips: IChip[] = state.chips.map((chip) => {
+          const isEnemy = targetChip && chip.team !== currentChip.team;
+
+          return {
+            ...chip,
+            current: isEnemy ? sendToStart(chip) : moveChip(chip)
+          };
         });
 
-        state.selected = { x,  y };
-        state.players = players;
-        state.chips = generateChipsPositionMap(players);
+        state.chips = chips;
+        state.map = generateChipsPositionMap(chips);
+        state.selected = moveTo;
       }
     }
   }
@@ -164,8 +149,8 @@ export const boardSlice = createSlice({
 // Action creators are generated for each case reducer function
 export const { selectChip, deselectChip, moveChip } = boardSlice.actions
 
-export const selectActiveCoords = (state: RootState) => state.board.chips;
+export const selectChipsMap = (state: RootState) => state.board.map;
+export const selectActiveChips = (state: RootState) => state.board.chips;
 export const selectCurrentChip = (state: RootState) => state.board.selected;
-export const selectPlayers = (state: RootState) => state.board.players;
 
 export default boardSlice.reducer
