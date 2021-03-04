@@ -1,9 +1,9 @@
-import React, { FC, useEffect, useState } from "react"
-import styled, { css }                    from "styled-components";
-import { useSelector }                    from "react-redux";
-import { useAppDispatch }                 from '../../../hooks';
-import { randomize, selectDicesAngles }   from './dicesReducer';
-import { Dice }                           from './Dice';
+import React, { FC, useEffect }         from 'react';
+import styled, { css }                  from 'styled-components';
+import { useSelector }                  from 'react-redux';
+import { useAppDispatch }               from '../../../hooks';
+import { randomize, selectDicesAngles } from './dicesReducer';
+import { Dice }                         from './Dice';
 
 export interface ISizeProp {
   size: number;
@@ -28,7 +28,7 @@ interface IDicesProps {
   size: number;
 }
 
-export const Dices: FC<IDicesProps> = ({size}) => {
+export const Dices: FC<IDicesProps> = ({ size }) => {
   const angles = useSelector(selectDicesAngles);
   const dispatch = useAppDispatch();
 
@@ -39,9 +39,9 @@ export const Dices: FC<IDicesProps> = ({size}) => {
         const [xRand, yRand] = angles[index];
         dice.style.transform = 'rotateX(' + xRand + 'deg) rotateY(' + yRand + 'deg)';
         dice.style.transform = 'rotateX(' + xRand + 'deg) rotateY(' + yRand + 'deg)';
-      })
+      });
     }
-  }
+  };
 
   useEffect(() => {
     setTimeout(() => setDicesToResultValues());
@@ -55,5 +55,5 @@ export const Dices: FC<IDicesProps> = ({size}) => {
       <Dice size={ size }/>
       <Dice size={ size }/>
     </DicesLayer>
-  )
-}
+  );
+};

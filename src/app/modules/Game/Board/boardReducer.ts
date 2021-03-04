@@ -15,13 +15,13 @@ export interface IChip {
 
 interface IMapState {
   chips: IChip[];
-  map: IChipsCoordinates;
+  map: ICoordinates<IChip>;
   selected: TMapCoords;
 }
 
-export interface IChipsCoordinates {
-  [x: string]: {
-    [y: string]: IChip;
+export interface ICoordinates<T> {
+  [x: number]: {
+    [y: number]: T;
   }
 }
 
@@ -81,8 +81,8 @@ const chips: IChip[] = [{
   home   : player.home
 }))).flat();
 
-const generateChipsPositionMap = (items: IChip[] = chips): IChipsCoordinates => {
-  const chipsMap: IChipsCoordinates = {};
+const generateChipsPositionMap = (items: IChip[] = chips): ICoordinates<IChip> => {
+  const chipsMap: ICoordinates<IChip> = {};
 
   items.forEach((chip) => {
     const [x, y] = chip.current;
@@ -90,15 +90,15 @@ const generateChipsPositionMap = (items: IChip[] = chips): IChipsCoordinates => 
     chipsMap[x] = {
       ...chipsMap[x],
       [y]: chip
-    }
+    };
   });
 
   return chipsMap;
-}
+};
 
 const initialState: IMapState = JSON.parse(JSON.stringify({
-  chips: chips,
-  map  : generateChipsPositionMap(),
+  chips   : chips,
+  map     : generateChipsPositionMap(),
   selected: []
 }));
 
@@ -123,7 +123,7 @@ export const boardSlice = createSlice({
       const targetChip = state.map[moveToX] && state.map[moveToX][moveToY];
 
       if (moveFrom && currentChip) {
-        const moveChip = ({ current  }: IChip) =>
+        const moveChip = ({ current }: IChip) =>
           (current[0] === moveFromX && current[1] === moveFromY) ? moveTo : current;
 
         const sendToStart = ({ current }: IChip) =>
@@ -144,13 +144,13 @@ export const boardSlice = createSlice({
       }
     }
   }
-})
+});
 
 // Action creators are generated for each case reducer function
-export const { selectChip, deselectChip, moveChip } = boardSlice.actions
+export const { selectChip, deselectChip, moveChip } = boardSlice.actions;
 
 export const selectChipsMap = (state: RootState) => state.board.map;
 export const selectActiveChips = (state: RootState) => state.board.chips;
 export const selectCurrentChip = (state: RootState) => state.board.selected;
 
-export default boardSlice.reducer
+export default boardSlice.reducer;

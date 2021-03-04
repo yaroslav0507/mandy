@@ -1,6 +1,6 @@
-import { createSlice }   from '@reduxjs/toolkit'
-import { RootState }     from '../../../store';
-import { randomNumber }  from '../../../shared/functions';
+import { createSlice }  from '@reduxjs/toolkit'
+import { RootState }    from '../../../store';
+import { randomNumber } from '../../../shared/functions';
 
 const angleToResult = (xAngle: number, yAngle: number) => {
   const spinMap = {
@@ -13,8 +13,8 @@ const angleToResult = (xAngle: number, yAngle: number) => {
   const spins = (degX: number, degY: number) => ({ a: (degX / 90) % 4, b: (degY / 90) % 4 });
   const { a, b } = spins(xAngle, yAngle);
   // @ts-ignore
-  return spinMap[a][b]
-}
+  return spinMap[a][b];
+};
 
 const rollDices = () => {
   const result: number[][] = [];
@@ -25,7 +25,7 @@ const rollDices = () => {
   for (let i = 0; i < 2; i++) {
     const randomAngle = (max: number, min: number) => {
       return randomNumber(min, max) * 90;
-    }
+    };
 
     const xRand = randomAngle(max, min);
     const yRand = randomAngle(max, min);
@@ -34,7 +34,7 @@ const rollDices = () => {
   }
 
   return result;
-}
+};
 
 const randomDicesResult = () => {
   const angles = rollDices();
@@ -47,7 +47,7 @@ const randomDicesResult = () => {
   return {
     angles,
     result
-  }
+  };
 };
 
 interface IDicesState {
@@ -58,7 +58,7 @@ interface IDicesState {
 const initialState: IDicesState = {
   angles: [[0, 0], [0, 0]],
   result: []
-}
+};
 
 export const dicesSlice = createSlice({
   name    : 'dices',
@@ -66,12 +66,12 @@ export const dicesSlice = createSlice({
   reducers: {
     randomize: () => randomDicesResult()
   }
-})
+});
 
 // Action creators are generated for each case reducer function
-export const { randomize } = dicesSlice.actions
+export const { randomize } = dicesSlice.actions;
 
 export const selectDicesAngles = (state: RootState) => state.dices.angles;
 export const selectDicesResult = (state: RootState) => state.dices.result;
 
-export default dicesSlice.reducer
+export default dicesSlice.reducer;

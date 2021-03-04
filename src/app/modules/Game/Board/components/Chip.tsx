@@ -30,9 +30,9 @@ const movement = keyframes`
   }
 `;
 
-export const Chip = styled.div`
-  width: 70%;
-  height: 70%;
+export const Chip = styled.div`${ ({ color, theme: { breakpoints } }: any) => css`
+  width: 80%;
+  height: 80%;
   border-radius: 100%;
   display: block;
   position: absolute;
@@ -41,10 +41,18 @@ export const Chip = styled.div`
   top: 0;
   bottom: 0;
   margin: auto;
-  border: 3px solid #00000030;
+  border: solid;
+  border-color: #00000030;
+  border-width: 2px;
   transition: ease .5s all;
   animation: ${movement} .5s linear 1;
-`;
+  
+  ${ breakpoints.up('md') } {
+    width: 70%;
+    height: 70%;
+    border-width: 3px;
+  }
+`}`;
 
 export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, color, selected }) => css`
   width: ${size}px;
