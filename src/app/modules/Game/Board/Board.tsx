@@ -13,7 +13,7 @@ import {
   selectActiveChips,
   selectChip,
   selectChipsMap,
-  selectCurrentChip
+  selectCurrentChip, selectHighlighted, setHighlightedField, resetHighlightedField
 } from './boardReducer';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
 import { Legend }                         from './components/Legend';
@@ -89,11 +89,13 @@ export const Board: FC = () => {
   const [selectedX, selectedY] = useAppSelector(selectCurrentChip);
   const chips = useAppSelector(selectActiveChips);
   const boardState = useAppSelector(selectChipsMap);
+  const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
   const dispatch = useAppDispatch();
   const [size, setSize] = useState(85);
 
   const isFieldOccupied = (x: number, y: number) => boardState[x] && boardState[x][y];
   const isChipSelected = (x: number, y: number) => x === selectedX && y === selectedY;
+  const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
 
   const onFieldClick = (x: number, y: number) => {
     const fieldIsOccupied = isFieldOccupied(x, y);
@@ -109,8 +111,11 @@ export const Board: FC = () => {
         const teleportsTo = teleportMap[x] && teleportMap[x][y];
 
         if (teleportsTo) {
+          dispatch(setHighlightedField(teleportsTo));
+
           setTimeout(() => {
             dispatch(moveChip([teleportsTo[0], teleportsTo[1]]));
+            dispatch(resetHighlightedField());
           }, 500);
         }
 
@@ -153,7 +158,7 @@ export const Board: FC = () => {
                 key={ y }
                 className="field"
                 empty={ !field }
-                selected={ isChipSelected(x, y) }
+                selected={ isChipSelected(x, y) || isChipHighlighted(x, y) }
                 withChip={ !!isFieldOccupied(x, y) }
                 onClick={ () => onFieldClick(x, y) }
               />

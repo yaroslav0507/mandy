@@ -17,6 +17,7 @@ interface IMapState {
   chips: IChip[];
   map: ICoordinates<IChip>;
   selected: TMapCoords;
+  highlighted: TMapCoords;
 }
 
 export interface ICoordinates<T> {
@@ -99,7 +100,8 @@ const generateChipsPositionMap = (items: IChip[] = chips): ICoordinates<IChip> =
 const initialState: IMapState = JSON.parse(JSON.stringify({
   chips   : chips,
   map     : generateChipsPositionMap(),
-  selected: []
+  selected: [],
+  highlighted: []
 }));
 
 export const boardSlice = createSlice({
@@ -111,6 +113,12 @@ export const boardSlice = createSlice({
     },
     deselectChip(state) {
       state.selected = [];
+    },
+    setHighlightedField(state, action: PayloadAction<number[]>) {
+      state.highlighted = action.payload;
+    },
+    resetHighlightedField(state) {
+      state.highlighted = [];
     },
     moveChip(state, action: PayloadAction<TMapCoords>) {
       const moveFrom = state.selected;
@@ -147,10 +155,11 @@ export const boardSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-export const { selectChip, deselectChip, moveChip } = boardSlice.actions;
+export const { selectChip, deselectChip, moveChip, setHighlightedField, resetHighlightedField } = boardSlice.actions;
 
 export const selectChipsMap = (state: RootState) => state.board.map;
 export const selectActiveChips = (state: RootState) => state.board.chips;
 export const selectCurrentChip = (state: RootState) => state.board.selected;
+export const selectHighlighted = (state: RootState) => state.board.highlighted;
 
 export default boardSlice.reducer;
