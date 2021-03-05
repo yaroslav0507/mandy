@@ -41,7 +41,7 @@ const Line = styled.div`${ ({ theme: { breakpoints } }: any) => css`
   ${ breakpoints.up('md') } {
       width: ${ legendWidth }px;
   }
-`}`;
+` }`;
 
 const Line2 = styled(Line)`
   transform-origin: top;
@@ -71,7 +71,7 @@ const ArcWrapper = styled.div`${ ({ color, theme: { breakpoints } }: any) => css
       top: 0;
       right: -4px;
    }
-`}`;
+` }`;
 
 const Arc = styled.div`${ ({ color, theme: { breakpoints } }: any) => css`
   width: 100%;
@@ -86,13 +86,13 @@ const Arc = styled.div`${ ({ color, theme: { breakpoints } }: any) => css`
   }
   
   &:after {
-    right: ${legendWidth - 3}px;
-    bottom: ${legendWidth - 3}px;
+    right: ${ legendWidth - 3 }px;
+    bottom: ${ legendWidth - 3 }px;
     background: #262a33;
     
     ${ breakpoints.up('md') } {
-      right: ${legendWidth - 1}px;
-      bottom: ${legendWidth - 1}px;
+      right: ${ legendWidth - 1 }px;
+      bottom: ${ legendWidth - 1 }px;
     }
   }
 
@@ -101,7 +101,7 @@ const Arc = styled.div`${ ({ color, theme: { breakpoints } }: any) => css`
     bottom: 0;
     background: linear-gradient(45deg, #000, ${ legendColor }, #000);
   }
-`}`;
+` }`;
 
 const GameBoardLegendQuarter = styled.div<{ index: number }>`${ ({ index }) => css`
   position: absolute;

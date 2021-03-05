@@ -7,7 +7,8 @@ import { ReactComponent as Logo }                           from '../../images/i
 import { DRAWER_WIDTH }                                     from './Sidebar';
 import { Chip }                                             from '../modules/Game/Board/components/Chip';
 import { randomize }                                        from '../modules/Game/Dices/dicesReducer';
-import { useAppDispatch }                                   from '../hooks';
+import { useAppDispatch, useAppSelector }                   from '../hooks';
+import { selectCurrentTeam }                                from '../modules/Game/Board/boardReducer';
 
 interface IStyledHeaderProps extends AppBarProps {
   shifted: number;
@@ -77,11 +78,12 @@ interface IHeaderOwnProps {
 }
 
 export const Header: FC<IHeaderOwnProps> = ({
-                                              isMobile,
-                                              sidebarOpen,
-                                              toggleDrawer
-                                            }) => {
+  isMobile,
+  sidebarOpen,
+  toggleDrawer
+}) => {
   const dispatch = useAppDispatch();
+  const team = useAppSelector(selectCurrentTeam);
 
   return (
     <StyledHeader shifted={ +(sidebarOpen && !isMobile) }>
@@ -114,7 +116,7 @@ export const Header: FC<IHeaderOwnProps> = ({
               size={ 50 }
               selected
               relative
-              color={ '#eee' }
+              color={ team?.color }
             />
           </StyledBadge>
         </Section>

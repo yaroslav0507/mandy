@@ -88,14 +88,14 @@ export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, s
 ` }`;
 
 export const Chip: FC<IChipWrapperProps> = ({
-                                              color,
-                                              selected,
-                                              relative,
-                                              size,
-                                              x,
-                                              y,
-                                              onClick
-                                            }) => (
+  color,
+  selected,
+  relative,
+  size,
+  x,
+  y,
+  onClick
+}) => (
   <ChipWrapper
     size={ size }
     color="inherit"

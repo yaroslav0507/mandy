@@ -1,4 +1,4 @@
 export enum EAppModule {
-  Game = 'game',
+  Game     = 'game',
   Settings = 'settings',
 }

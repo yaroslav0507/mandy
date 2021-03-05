@@ -22,7 +22,7 @@ export const Game: FC = () => {
             item
             md={ 12 }
           >
-            {''}
+            { '' }
           </Grid>
         </Grid>
       </Grid>

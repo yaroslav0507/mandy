@@ -6,7 +6,8 @@ import { Chip }                           from './components/Chip';
 import { Field }                          from './components/Field';
 import { Dices }                          from '../Dices/Dices';
 import {
-  deselectChip, IChip,
+  deselectChip,
+  IChip,
   ICoordinates,
   isFieldAccessible,
   map,
@@ -17,8 +18,9 @@ import {
   selectChipsMap,
   selectCurrentChip,
   selectHighlighted,
+  selectTeams,
   setHighlightedField
-} from './boardReducer';
+}                                         from './boardReducer';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
 import { Legend }                         from './components/Legend';
 
@@ -90,9 +92,10 @@ const teleportMap: ICoordinates<number[]> = {
 };
 
 export const Board: FC = () => {
-  const [selectedX, selectedY] = useAppSelector(selectCurrentChip);
+  const { position: [selectedX, selectedY] } = useAppSelector(selectCurrentChip);
   const chips: IChip[] = useAppSelector(selectActiveChips);
   const boardState = useAppSelector(selectChipsMap);
+  const teams = useAppSelector(selectTeams);
   const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
   const dispatch = useAppDispatch();
   const [size, setSize] = useState(85);
@@ -111,7 +114,7 @@ export const Board: FC = () => {
 
     if (!self) {
       if (selectedX !== undefined) {
-        if (fieldAccessible && targetOccupied.team === 1) {
+        if (fieldAccessible) {
           dispatch(move);
           console.log([x, y]);
           const teleportsTo = teleportMap[x] && teleportMap[x][y];
@@ -173,13 +176,13 @@ export const Board: FC = () => {
           </Row>
         )) }
 
-        { chips.map(({ color, current: [x, y] }, index) => (
+        { chips.map(({ teamId, position: [x, y] }, index) => (
           <Chip
             x={ x }
             y={ y }
             key={ index }
             size={ size }
-            color={ color }
+            color={ teams[teamId]?.color }
             selected={ isChipSelected(x, y) }
             onClick={ () => onFieldClick(x, y) }
           />

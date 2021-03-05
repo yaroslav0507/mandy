@@ -3,7 +3,7 @@ import { RootState }    from '../../../store';
 import { randomNumber } from '../../../shared/functions';
 
 const angleToResult = (xAngle: number, yAngle: number) => {
-  const spinMap: {[key: number]: number[]} = {
+  const spinMap: { [key: number]: number[] } = {
     0: [1, 3, 6, 4],
     1: [2, 2, 2, 2],
     2: [6, 4, 1, 3],
@@ -62,7 +62,8 @@ export const dicesSlice = createSlice({
         result
       };
     }
-}});
+  }
+});
 
 // Action creators are generated for each case reducer function
 export const { randomize } = dicesSlice.actions;

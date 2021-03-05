@@ -24,9 +24,9 @@ interface IRouterDrivenTabsProps {
 }
 
 export const RouterDrivenTabsBase: FC<IRouterDrivenTabsProps> = ({
-                                                                   tabs,
-                                                                   baseURL,
-                                                                 }) => {
+  tabs,
+  baseURL,
+}) => {
   const { push } = useHistory();
   const { pathname } = useLocation();
   const page = pathname.replace(`${ baseURL }/`, '');
