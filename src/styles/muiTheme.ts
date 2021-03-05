@@ -66,6 +66,9 @@ const overrides: Overrides = {
     }
   },
   MuiBadge: {
+    colorPrimary: {
+      backgroundColor: theme.colors.primary
+    },
     colorSecondary: {
       backgroundColor: theme.colors.warning
     }

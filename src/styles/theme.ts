@@ -21,7 +21,7 @@ export interface ITheme {
 
 export const theme: ITheme = {
   colors: {
-    primary: '#6f90d9',
+    primary: '#34b97a',
     secondary: '#fac05e',
     action: '#69818b',
     disabled: '#606060',

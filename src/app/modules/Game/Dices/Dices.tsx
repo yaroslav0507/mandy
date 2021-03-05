@@ -33,7 +33,7 @@ export const Dices: FC<IDicesProps> = ({ size }) => {
   const dispatch = useAppDispatch();
 
   const setDicesToResultValues = () => {
-    const dices: any = document.getElementsByClassName('dice');
+    const dices: HTMLCollectionOf<Element> = document.getElementsByClassName('dice');
     if (dices && dices.length) {
       Array.prototype.forEach.call(dices, (dice, index) => {
         const [xRand, yRand] = angles[index];

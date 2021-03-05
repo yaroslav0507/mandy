@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState }                  from '../../../store';
 
 type TMapCoords = number[];
@@ -44,7 +44,7 @@ export const map = [
 
 export const isFieldAccessible = (x: number, y: number) => !!map[x][y];
 
-const chips: IChip[] = [{
+export const players = [{
   team  : 1,
   active: true,
   name  : 'Player 1',
@@ -72,7 +72,9 @@ const chips: IChip[] = [{
   color : '#d63031',
   chips : [[8, 5], [9, 5], [10, 5], [11, 5]],
   home  : [[8, 6], [9, 6], [10, 6], [11, 6]]
-}].map(player => player.chips.map(chip => ({
+}];
+
+const chips: IChip[] = players.map(player => player.chips.map(chip => ({
   team   : player.team,
   name   : player.name,
   color  : player.color,
@@ -98,7 +100,8 @@ const generateChipsPositionMap = (items: IChip[] = chips): ICoordinates<IChip> =
 };
 
 const initialState: IMapState = JSON.parse(JSON.stringify({
-  chips   : chips,
+  chips,
+  players,
   map     : generateChipsPositionMap(),
   selected: [],
   highlighted: []

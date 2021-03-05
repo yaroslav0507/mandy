@@ -2,18 +2,22 @@ import React, { FC, useEffect, useState } from 'react';
 import styled                             from 'styled-components';
 import { theme }                          from '../../../../styles';
 import { Grid }                           from '@material-ui/core';
-import { Chip, ChipWrapper }              from './components/Chip';
+import { Chip }                           from './components/Chip';
 import { Field }                          from './components/Field';
 import { Dices }                          from '../Dices/Dices';
 import {
-  deselectChip, IChip, ICoordinates,
+  deselectChip, IChip,
+  ICoordinates,
   isFieldAccessible,
   map,
   moveChip,
+  resetHighlightedField,
   selectActiveChips,
   selectChip,
   selectChipsMap,
-  selectCurrentChip, selectHighlighted, setHighlightedField, resetHighlightedField
+  selectCurrentChip,
+  selectHighlighted,
+  setHighlightedField
 } from './boardReducer';
 import { useAppDispatch, useAppSelector } from '../../../hooks';
 import { Legend }                         from './components/Legend';
@@ -47,47 +51,47 @@ const Row = styled.div`
 const gameBoardId = 'game-board';
 
 const teleportMap: ICoordinates<number[]> = {
-  0: {
+  0 : {
     1: [1, 1],
     3: [3, 0],
     4: [12, 4],
     8: [12, 8],
     9: [3, 12]
   },
-  1: {
+  1 : {
     12: [1, 11]
   },
-  3: {
-    0: [0, 3],
+  3 : {
+    0 : [0, 3],
     12: [0, 9]
   },
-  4: {
-    0: [4, 12],
+  4 : {
+    0 : [4, 12],
     12: [4, 0]
   },
-  8: {
-    0: [8, 12],
+  8 : {
+    0 : [8, 12],
     12: [8, 0]
   },
-  9: {
-    0: [12, 3],
+  9 : {
+    0 : [12, 3],
     12: [12, 9]
   },
   11: {
     0: [11, 1]
   },
   12: {
-    3: [9, 0],
-    4: [0, 4],
-    8: [0, 8],
-    9: [9, 12],
+    3 : [9, 0],
+    4 : [0, 4],
+    8 : [0, 8],
+    9 : [9, 12],
     11: [11, 11]
   }
 };
 
 export const Board: FC = () => {
   const [selectedX, selectedY] = useAppSelector(selectCurrentChip);
-  const chips = useAppSelector(selectActiveChips);
+  const chips: IChip[] = useAppSelector(selectActiveChips);
   const boardState = useAppSelector(selectChipsMap);
   const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
   const dispatch = useAppDispatch();
@@ -98,32 +102,35 @@ export const Board: FC = () => {
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
 
   const onFieldClick = (x: number, y: number) => {
-    const fieldIsOccupied = isFieldOccupied(x, y);
-    const fieldIsAccessible = isFieldAccessible(x, y);
+    const self = isChipSelected(x, y);
+    const targetOccupied = isFieldOccupied(x, y);
+    const fieldAccessible = isFieldAccessible(x, y);
     const move = moveChip([x, y]);
     const select = selectChip([x, y]);
     const deselect = deselectChip();
 
-    if (selectedX !== undefined) {
-      if (fieldIsAccessible) {
-        dispatch(move);
-        console.log([x, y]);
-        const teleportsTo = teleportMap[x] && teleportMap[x][y];
+    if (!self) {
+      if (selectedX !== undefined) {
+        if (fieldAccessible && targetOccupied.team === 1) {
+          dispatch(move);
+          console.log([x, y]);
+          const teleportsTo = teleportMap[x] && teleportMap[x][y];
 
-        if (teleportsTo) {
-          dispatch(setHighlightedField(teleportsTo));
+          if (teleportsTo) {
+            dispatch(setHighlightedField(teleportsTo));
 
-          setTimeout(() => {
-            dispatch(moveChip([teleportsTo[0], teleportsTo[1]]));
-            dispatch(resetHighlightedField());
-          }, 500);
+            setTimeout(() => {
+              dispatch(moveChip([teleportsTo[0], teleportsTo[1]]));
+              dispatch(resetHighlightedField());
+            }, 500);
+          }
+
+        } else {
+          dispatch(targetOccupied ? select : deselect);
         }
-
-      } else {
-        dispatch(fieldIsOccupied ? select : deselect);
+      } else if (targetOccupied) {
+        dispatch(select);
       }
-    } else if (fieldIsOccupied) {
-      dispatch(select);
     }
   };
 
@@ -167,16 +174,15 @@ export const Board: FC = () => {
         )) }
 
         { chips.map(({ color, current: [x, y] }, index) => (
-          <ChipWrapper
+          <Chip
+            x={ x }
+            y={ y }
             key={ index }
             size={ size }
-            style={ { 'transform': `translate(${ x * size }px, ${ y * size }px)` } }
             color={ color }
             selected={ isChipSelected(x, y) }
             onClick={ () => onFieldClick(x, y) }
-          >
-            <Chip key={ x + y }/>
-          </ChipWrapper>
+          />
         )) }
       </GameBoard>
 

@@ -1,13 +1,13 @@
-import { AppBar as MuiHeader, Badge, IconButton, Menu as MuiMenu, MenuItem, Toolbar, } from '@material-ui/core';
-import { AppBarProps }                                                                 from '@material-ui/core/AppBar/AppBar';
-import { Menu }                                                                        from '@material-ui/icons';
-import React, { FC, useRef }                                                           from 'react';
-import styled, { css }                                                                 from 'styled-components';
-import { ReactComponent as Logo }                                                      from '../../images/icons/logo.svg';
-import mockUserImage
-                                                                                       from '../../images/mock/main-profile-icon.jpg';
-import { UserCircle }                                                                  from '../modules/Game/Board/components/UserCircle';
-import { DRAWER_WIDTH }                                                                from './Sidebar';
+import { AppBar as MuiHeader, Badge, IconButton, Toolbar, } from '@material-ui/core';
+import { AppBarProps }                                      from '@material-ui/core/AppBar/AppBar';
+import { Menu }                                             from '@material-ui/icons';
+import React, { FC }                                        from 'react';
+import styled, { css }                                      from 'styled-components';
+import { ReactComponent as Logo }                           from '../../images/icons/logo.svg';
+import { DRAWER_WIDTH }                                     from './Sidebar';
+import { Chip }                                             from '../modules/Game/Board/components/Chip';
+import { randomize }                                        from '../modules/Game/Dices/dicesReducer';
+import { useAppDispatch }                                   from '../hooks';
 
 interface IStyledHeaderProps extends AppBarProps {
   shifted: number;
@@ -64,27 +64,11 @@ const StyledToolbar = styled(Toolbar)`&& {
 
 const StyledBadge = styled(Badge)`&& {
  .MuiBadge-badge {
-    min-width         : 17px;
-    height            : 17px;
     right             : 6px;
     top               : 6px;
     font-variant-caps : small-caps;
   }
 }`;
-
-const RelativeBadge = styled(StyledBadge)`&& {
- .MuiBadge-badge {
-    position: relative;
-    top: 10px;
-    right: 0;
- }
-`;
-
-const MenuAnchor = styled.div`
-  visibility: hidden;
-  height: 0;
-  width: 0;
-`;
 
 interface IHeaderOwnProps {
   isMobile: boolean;
@@ -97,15 +81,7 @@ export const Header: FC<IHeaderOwnProps> = ({
                                               sidebarOpen,
                                               toggleDrawer
                                             }) => {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const menuAnchorRef = useRef(null);
-  const handleClick = () => {
-    setAnchorEl(menuAnchorRef.current);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const dispatch = useAppDispatch();
 
   return (
     <StyledHeader shifted={ +(sidebarOpen && !isMobile) }>
@@ -125,47 +101,22 @@ export const Header: FC<IHeaderOwnProps> = ({
         </LogoSection>
 
         <Section>
-          {/*<IconButton*/ }
-          {/*  color="inherit"*/ }
-          {/*  onClick={ () => rollDices() }*/ }
-          {/*>*/ }
-          {/*  <DiceIcon src={ iconDice }/>*/ }
-          {/*</IconButton>*/ }
-
           <StyledBadge
-            color="secondary"
-            badgeContent={ '1' }
+            color="primary"
+            badgeContent={ '2' }
             aria-controls="user-menu"
             aria-haspopup="true"
-            onClick={ handleClick }
+            onClick={ () => dispatch(randomize()) }
           >
-            <UserCircle
-              color="#368962"
-              image={ mockUserImage }
+            <Chip
+              x={ 0 }
+              y={ 0 }
+              size={ 50 }
+              selected
+              relative
+              color={ '#eee' }
             />
-
-            <MenuAnchor ref={ menuAnchorRef }/>
           </StyledBadge>
-
-          <MuiMenu
-            id="user-menu"
-            anchorEl={ anchorEl }
-            keepMounted
-            open={ Boolean(anchorEl) }
-            onClose={ handleClose }
-          >
-            <MenuItem onClick={ handleClose }>Profile</MenuItem>
-            <MenuItem onClick={ handleClose }>Settings</MenuItem>
-            <MenuItem onClick={ handleClose }>
-              <RelativeBadge
-                color="secondary"
-                badgeContent={ '1' }
-              >
-                Notifications
-              </RelativeBadge>
-            </MenuItem>
-            <MenuItem onClick={ handleClose }>Log Out</MenuItem>
-          </MuiMenu>
         </Section>
       </StyledToolbar>
     </StyledHeader>
