@@ -1,12 +1,14 @@
 import styled, { css, keyframes } from 'styled-components';
-import React, { FC }              from 'react';
+import React, { FC, useMemo }     from 'react';
 
 interface IChipWrapperProps {
   x: number;
   y: number;
   size: number;
+  label?: string;
+  margin?: string | number;
   color?: string;
-  selected: boolean;
+  selected?: boolean;
   relative?: boolean;
   onClick?: () => void;
 }
@@ -52,6 +54,7 @@ export const ChipCircle = styled.div`${ ({ color, theme: { breakpoints } }: any)
   transition: ease .5s all;
   animation: ${ movement } .5s linear 1;
   background-color: ${ color };
+  box-shadow: 0 0 5px #000000a8;
   
   ${ breakpoints.up('md') } {
     width: 70%;
@@ -60,14 +63,31 @@ export const ChipCircle = styled.div`${ ({ color, theme: { breakpoints } }: any)
   }
 ` }`;
 
-export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, selected, x, y }) => css`
+export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, margin = 0, selected, x, y, label}) => css`
   width: ${ size }px;
   height: ${ size }px;
   position: ${ relative ? 'relative' : 'absolute' };
   transition: ease .3s all;
+  margin: ${margin};
   ${ (x || y) && `
     transform: translate(${ x * size }px, ${ y * size }px);
   ` }
+  
+  &:after {
+    content: '${label}';
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    font-family: 'Jost';
+    font-weight: 700;
+    font-size: ${ size / 3 }px;
+    color: #44484e;
+    text-shadow: 0 1px 0 #ffffff85;
+    opacity: .3;
+  }
   
   &:hover {
     cursor: pointer;
@@ -92,22 +112,23 @@ export const Chip: FC<IChipWrapperProps> = ({
   selected,
   relative,
   size,
+  margin = 0,
+  label,
   x,
   y,
   onClick
-}) => (
+}) => useMemo(() => (
   <ChipWrapper
     size={ size }
     color="inherit"
     selected={ selected }
     relative={ relative }
+    onClick={ onClick }
+    margin={margin}
+    label={label}
     x={ x }
     y={ y }
-    onClick={ onClick }
   >
-    <ChipCircle
-      color={ color }
-      key={ x + y }
-    />
+    <ChipCircle color={ color }/>
   </ChipWrapper>
-);
+), [x, y, size, margin, color, selected]);
