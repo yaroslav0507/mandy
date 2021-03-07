@@ -140,7 +140,7 @@ export const boardSlice = createSlice({
       state.highlighted = [];
     },
     moveChip(state, action: PayloadAction<TMapCoords>) {
-      if (state.selected) {
+      if (state.selected && state.selected.position && state.selected.position.length) {
         const { teams, selected: { teamId, position } } = state;
 
         if (position) {
@@ -169,6 +169,8 @@ export const boardSlice = createSlice({
           state.selected.position = moveTo;
           state.occupied = generateChipsPositionMap(chips);
         }
+      } else {
+        throw Error('Cannot move unselected figure');
       }
     }
   }
