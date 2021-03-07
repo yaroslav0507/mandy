@@ -181,22 +181,19 @@ export const Board: FC = () => {
             console.log(player, ' goesToLockRoom ', goesToLockRoom);
             console.log('lockRoomOccupied: ', lockRoomOccupied);
 
-            if (lockRoomExitOccupiedByEnemy) {
-              console.log('lockRoomExitOccupied', lockRoomExitOccupiedByEnemy);
-              lockRoomOccupied.forEach(chip => {
-                dispatch(selectChip(chip));
-                dispatch(moveChip(goesToLockRoom));
-              });
-              dispatch(deselect);
+            lockRoomOccupied.forEach(chip => {
+              dispatch(selectChip(chip));
+              dispatch(moveChip(goesToLockRoom));
+            });
+            dispatch(deselect);
 
-              const primaryFigure = figureByCoords(selectedX, selectedY)[0];
-              dispatch(selectChip({
-                ...primaryFigure,
-                position: teleportsFrom
-              } as IChip));
+            const primaryFigure = figureByCoords(selectedX, selectedY)[0];
+            dispatch(selectChip({
+              ...primaryFigure,
+              position: teleportsFrom
+            } as IChip));
 
-              dispatch(moveChip(teleportsTo));
-            }
+            dispatch(moveChip(teleportsTo));
           } else {
             const lockRoomExit = lockRooms[x] && lockRooms[x][y];
 
