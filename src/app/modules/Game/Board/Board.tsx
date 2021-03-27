@@ -68,12 +68,6 @@ export const Board: FC = () => {
   const isChipSelected = (figureId: number, figureTeamId: number) => figureId === id && figureTeamId === teamId;
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
 
-  useEffect(() => {
-    setTimeout(() => {
-      setFiguresState(figures);
-    });
-  }, [figures]);
-
   const onFieldClick = (x: number, y: number, id: number) => {
     const figureSelected = selectedX !== undefined;
     const fieldOccupied = figureByCoords(x, y);
@@ -94,8 +88,6 @@ export const Board: FC = () => {
         dispatch(setHighlightedField(teleportsTo));
 
         setTimeout(() => {
-          const teleportTargetOccupied = teleportsTo && figureByCoords(teleportsTo[0], teleportsTo[1]);
-
           const goesToLockRoomExit = teleportsTo && lockRooms[teleportsTo[0]] && lockRooms[teleportsTo[0]][teleportsTo[1]];
           const lockRoomOccupied = teleportsTo && figureByCoords(teleportsTo[0], teleportsTo[1]);
           const lockRoomOccupiedByEnemy = lockRoomOccupied && lockRoomOccupied[0].teamId !== teamId;
@@ -134,16 +126,6 @@ export const Board: FC = () => {
 
             dispatch(moveChip(teleportsTo));
           } else {
-            const lockRoomExit = lockRooms[x] && lockRooms[x][y];
-
-            if (lockRoomExit && teleportTargetOccupied && teleportTargetOccupied[0].teamId !== teamId) {
-              teleportTargetOccupied.forEach(({ position: [x, y], id }) => {
-                dispatch(selectChip({ teamId, id, position: [x, y] }));
-                dispatch(moveChip(lockRoomExit));
-                dispatch(deselect);
-              });
-            }
-            dispatch(select);
             dispatch(moveChip(teleportsTo));
             dispatch(resetHighlightedField());
             dispatch(deselect);
@@ -185,6 +167,12 @@ export const Board: FC = () => {
   useEffect(() => {
     handleSizeCheck();
   }, []);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setFiguresState(figures);
+    });
+  }, [figures]);
 
   useEffect(() => {
     window.addEventListener('resize', () => handleSizeCheck());
@@ -245,5 +233,5 @@ export const Board: FC = () => {
 
       <Dices size={ size }/>
     </BoardWrapper>
-  ), [id, size, teamId, selectedX, selectedY]);
+  ), [id, size, teamId, selectedX, selectedY, figuresState]);
 };
