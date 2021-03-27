@@ -155,7 +155,7 @@ export const boardSlice = createSlice({
           const moveChip = ({ position: [x, y], id }: IChip) => (x === moveFromX && y === moveFromY && id === state.selected.id) ? moveTo : [x, y];
           const sendToStart = ({ position: [x, y] }: IChip) => (x === moveToX && y === moveToY) ? startPosition : [x, y];
 
-          const chips = state.chips.map((chip) => {
+          const chips = state.chips.map((chip, index) => {
             const isEnemy = targetChip && chip.teamId !== teamId;
 
             return {
@@ -170,7 +170,7 @@ export const boardSlice = createSlice({
           state.occupied = generateChipsPositionMap(chips);
         }
       } else {
-        throw Error('Cannot move unselected figure');
+        console.log('Cannot move unselected figure');
       }
     }
   }
