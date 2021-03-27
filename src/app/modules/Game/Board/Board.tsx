@@ -8,7 +8,6 @@ import { Dices }                                   from '../Dices/Dices';
 import {
   deselectChip,
   IChip,
-  ICoordinates,
   isFieldAccessible,
   map,
   moveChip,
@@ -19,11 +18,12 @@ import {
   selectCurrentChip,
   selectHighlighted,
   selectTeams,
-  setHighlightedField, teamsConfig
-}                                         from './boardReducer';
-import { useAppDispatch, useAppSelector } from '../../../hooks';
-import { Legend }                               from './components/Legend';
-import { figureMargin, lockRooms, teleportMap } from './maps';
+  setHighlightedField,
+  teamsConfig
+}                                                  from './boardReducer';
+import { useAppDispatch, useAppSelector }          from '../../../hooks';
+import { Legend }                                  from './components/Legend';
+import { figureMargin, lockRooms, teleportMap }    from './maps';
 
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
@@ -56,8 +56,8 @@ const gameBoardId = 'game-board';
 export const Board: FC = () => {
   const displayLabels = true;
   const { id, teamId, position: [selectedX, selectedY] } = useAppSelector(selectCurrentChip);
-  const selectedChipId = `${id}`;
   const figures: IChip[] = useAppSelector(selectActiveChips);
+  const [figuresState, setFiguresState] = useState([] as IChip[]);
   const boardState = useAppSelector(selectChipsMap);
   const teams = useAppSelector(selectTeams);
   const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
@@ -67,6 +67,12 @@ export const Board: FC = () => {
   const figureByCoords = (x: number, y: number) => boardState[x] && boardState[x][y];
   const isChipSelected = (figureId: number, figureTeamId: number) => figureId === id && figureTeamId === teamId;
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
+
+  useEffect(() => {
+    setTimeout(() => {
+      setFiguresState(figures);
+    });
+  }, [figures]);
 
   const onFieldClick = (x: number, y: number, id: number) => {
     const figureSelected = selectedX !== undefined;
@@ -117,7 +123,7 @@ export const Board: FC = () => {
 
           if (goesToLockRoomExit && lockRoomOccupiedByEnemy) {
             const fieldFigures = figureByCoords(selectedX, selectedY);
-            const primaryFigure = fieldFigures?.find(figure => figure.id === +selectedChipId);
+            const primaryFigure = fieldFigures[0];
 
             saveFirstKillRest();
 
@@ -131,7 +137,7 @@ export const Board: FC = () => {
             const lockRoomExit = lockRooms[x] && lockRooms[x][y];
 
             if (lockRoomExit && teleportTargetOccupied && teleportTargetOccupied[0].teamId !== teamId) {
-              teleportTargetOccupied.forEach(({position: [x, y], id}) => {
+              teleportTargetOccupied.forEach(({ position: [x, y], id }) => {
                 dispatch(selectChip({ teamId, id, position: [x, y] }));
                 dispatch(moveChip(lockRoomExit));
                 dispatch(deselect);
@@ -148,9 +154,9 @@ export const Board: FC = () => {
 
     const whenFigureSelected = () => {
       if (fieldOccupied) {
-        if (isFriendlyTarget) {
+        if (isFriendlyTarget || !fieldAccessible) {
           dispatch(select);
-        } else {
+        } else if (fieldAccessible) {
           dispatch(move);
           whenFigureLanded();
         }
@@ -200,22 +206,23 @@ export const Board: FC = () => {
                 key={ y }
                 className="field"
                 empty={ !field }
-                highlighted={isChipHighlighted(x, y)}
-                occupied={ !!figureByCoords(x, y) && isFieldAccessible(x, y)}
+                highlighted={ isChipHighlighted(x, y) }
+                occupied={ !!figureByCoords(x, y) && isFieldAccessible(x, y) }
                 onClick={ () => onFieldClick(x, y, 0) }
               />
             )) }
           </Row>
         )) }
 
-        { figures.map(({ id, teamId, position: [x, y] }, index) => {
+        { figuresState.map(({ id, teamId, position: [x, y] }, index) => {
           const target = boardState[x] && boardState[x][y];
           const marginKey = target && target.map(figure => figure.id).join('');
 
           const alphabets = {
-            greek: ['α', 'β', 'γ', 'δ'],
-            roman: ['I', 'II', 'III', 'IV'],
-            arab: ['1', '2', '3', '4']
+            english: ['A', 'B', 'C', 'D'],
+            greek  : ['α', 'β', 'γ', 'δ'],
+            roman  : ['I', 'II', 'III', 'IV'],
+            arab   : ['1', '2', '3', '4']
           };
 
           const label = displayLabels && alphabets.roman[id];

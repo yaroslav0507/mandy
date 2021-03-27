@@ -130,6 +130,7 @@ export const boardSlice = createSlice({
       }
     },
     deselectChip(state) {
+      state.selected.id = -1;
       state.selected.teamId = -1;
       state.selected.position = [];
     },
