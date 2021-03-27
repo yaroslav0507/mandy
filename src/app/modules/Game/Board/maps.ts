@@ -79,3 +79,62 @@ export const figureMargin = (size: number, key: string, id: number) => {
 
   return map[key] && map[key][id];
 };
+
+export const directions = {
+  right: 'right',
+  down : 'down',
+  left : 'left',
+  up   : 'up',
+};
+
+export const getDirection = (x: number, y: number, teamId: number) => {
+  const homeEntrance = ({
+    0: {
+      6: {
+        12: directions.up
+      }
+    },
+    1: {
+      0: {
+        6: directions.right
+      }
+    },
+    2: {
+      6: {
+        0: directions.down
+      }
+    },
+    3: {
+      12: {
+        6: directions.left
+      }
+    }
+  } as any)?.[teamId]?.[x]?.[y];
+
+  const lockRoom = ({
+    1: {
+      1: directions.up,
+      11: directions.left
+    },
+    11: {
+      1: directions.right,
+      11: directions.down
+    }
+  } as any)?.[x]?.[y];
+
+  if (homeEntrance) {
+    return homeEntrance;
+  } else if (lockRoom) {
+    return lockRoom;
+  }
+
+  if (y === 0 && x < 12) {
+    return directions.right;
+  } else if (x === 12 && y < 12) {
+    return directions.down;
+  } else if (y === 12 && x > 0) {
+    return directions.left;
+  } else if (x === 0 && y > 0) {
+    return directions.up;
+  }
+};

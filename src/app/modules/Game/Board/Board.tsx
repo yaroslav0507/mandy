@@ -1,10 +1,10 @@
-import React, { FC, useEffect, useMemo, useState } from 'react';
-import styled                                      from 'styled-components';
-import { theme }                                   from '../../../../styles';
-import { Grid }                                    from '@material-ui/core';
-import { Chip }                                    from './components/Chip';
-import { Field }                                   from './components/Field';
-import { Dices }                                   from '../Dices/Dices';
+import React, { FC, useEffect, useMemo, useState }            from 'react';
+import styled                                                 from 'styled-components';
+import { theme }                                              from '../../../../styles';
+import { Grid }                                               from '@material-ui/core';
+import { Chip }                                               from './components/Chip';
+import { Field }                                              from './components/Field';
+import { Dices }                                              from '../Dices/Dices';
 import {
   deselectChip,
   IChip,
@@ -20,10 +20,10 @@ import {
   selectTeams,
   setHighlightedField,
   teamsConfig
-}                                                  from './boardReducer';
-import { useAppDispatch, useAppSelector }          from '../../../hooks';
-import { Legend }                                  from './components/Legend';
-import { figureMargin, lockRooms, teleportMap }    from './maps';
+}                                                             from './boardReducer';
+import { useAppDispatch, useAppSelector }                     from '../../../hooks';
+import { Legend }                                             from './components/Legend';
+import { figureMargin, getDirection, lockRooms, teleportMap } from './maps';
 
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
@@ -63,23 +63,25 @@ export const Board: FC = () => {
   const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
   const dispatch = useAppDispatch();
   const [size, setSize] = useState(85);
+  const [selected, setSelected] = useState(false);
 
   const figureByCoords = (x: number, y: number) => boardState[x] && boardState[x][y];
   const isChipSelected = (figureId: number, figureTeamId: number) => figureId === id && figureTeamId === teamId;
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
 
   const onFieldClick = (x: number, y: number, id: number) => {
-    const figureSelected = selectedX !== undefined;
+    const _selected = selectedX !== undefined;
     const fieldOccupied = figureByCoords(x, y);
     const figure = fieldOccupied && fieldOccupied.find(figure => figure.id === id);
     const fieldAccessible = isFieldAccessible(x, y);
-
     const isFriendlyTarget = teamId < 0 || figure && figure.teamId === teamId;
     const move = moveChip([x, y]);
     const select = selectChip(figure);
     const deselect = deselectChip();
 
     const whenFigureLanded = () => {
+      console.log(getDirection(x, y, teamId));
+
       const currTeleportMap = teleportMap[x] && teleportMap[x][y] && teleportMap[x][y];
       const teleportsFrom = currTeleportMap && currTeleportMap.enter || [];
       const teleportsTo = currTeleportMap && currTeleportMap.exit || [];
@@ -100,13 +102,7 @@ export const Board: FC = () => {
                 dispatch(moveChip(goesToLockRoomExit));
               } else {
                 const { start } = teamsConfig[enemy.teamId];
-
-                start.forEach((coords) => {
-                  const isOccupied = figureByCoords(coords[0], coords[1]);
-                  if (!isOccupied) {
-                    dispatch(moveChip(coords));
-                  }
-                });
+                dispatch(moveChip(start[enemy.id]));
               }
 
               dispatch(deselect);
@@ -150,10 +146,11 @@ export const Board: FC = () => {
       }
     };
 
-    if (figureSelected) {
+    if (_selected) {
       whenFigureSelected();
     } else if (fieldOccupied) {
       dispatch(select);
+      console.log(getDirection(x, y, teamId));
     }
   };
 
@@ -166,6 +163,7 @@ export const Board: FC = () => {
 
   useEffect(() => {
     handleSizeCheck();
+    setSelected(selectedX !== undefined);
   }, []);
 
   useEffect(() => {
