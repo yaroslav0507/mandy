@@ -56,7 +56,7 @@ const gameBoardId = 'game-board';
 
 export const Board: FC = () => {
   const displayLabels = true;
-  const { id, teamId, position: [selectedX, selectedY] } = useAppSelector(selectCurrentChip);
+  const { id, teamId, position } = useAppSelector(selectCurrentChip);
   const figures: IChip[] = useAppSelector(selectActiveChips);
   const [figuresState, setFiguresState] = useState([] as IChip[]);
   const boardState = useAppSelector(selectChipsMap);
@@ -65,16 +65,19 @@ export const Board: FC = () => {
   const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
   const dispatch = useAppDispatch();
   const [size, setSize] = useState(85);
-  const _selected = selectedX !== undefined;
+  const [selectedChip, setSelectedShip] = useState([] as number[]);
+  const [selectedX, selectedY] = selectedChip;
 
   const figureByCoords = (x: number, y: number) => boardState[x] && boardState[x][y];
   const isChipSelected = (figureId: number, figureTeamId: number) => figureId === id && figureTeamId === teamId;
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
-  const projectedPosition = (x: number, y: number, dice: number) => getProjectedPosition(x, y, teamId, dice);
+  const projectedPosition = (x: number, y: number, dice: number) => getProjectedPosition(x, y, boardState, teamId, dice);
 
   const highlightProjectedField = () => {
-    const dice = Math.max.apply(null, dicesResult);
-    const projection = projectedPosition(selectedX, selectedY, dice);
+    const sorted = dicesResult.slice().sort((a, b) => b - a);
+    const projections = sorted.map(dice => projectedPosition(selectedX, selectedY, dice)).filter(pos => !!pos);
+    const projection = projections[0];
+
     if (projection) {
       dispatch(setHighlightedField(projection as number[]));
     } else if (highlightedX !== undefined) {
@@ -82,9 +85,9 @@ export const Board: FC = () => {
     }
   };
 
-  const onFieldClick = (x: number, y: number, id: number) => {
+  const onFieldClick = (x: number, y: number, figureId: number) => {
     const fieldOccupied = figureByCoords(x, y);
-    const figure = fieldOccupied && fieldOccupied.find(figure => figure.id === id);
+    const figure = fieldOccupied && fieldOccupied.find(figure => figure.id === figureId);
     const fieldAccessible = isFieldAccessible(x, y);
     const isFriendlyTarget = teamId < 0 || figure && figure.teamId === teamId;
     const move = moveChip([x, y]);
@@ -140,12 +143,16 @@ export const Board: FC = () => {
     };
 
     const whenFigureSelected = () => {
-      if (fieldOccupied) {
-        if (isFriendlyTarget || !fieldAccessible) {
-          dispatch(select);
-        } else if (fieldAccessible) {
+      if (fieldOccupied && teamId >= 0) {
+        const [homeDoorsX, homeDoorsY] = teams[teamId]?.doors;
+        const isHomeExit = homeDoorsX === x && homeDoorsY === y;
+        const isSelfClick = selectedX === x && selectedY === y;
+
+        if (!isSelfClick && (isHomeExit || fieldAccessible && !isFriendlyTarget)) {
           dispatch(move);
           whenFigureLanded();
+        } else {
+          dispatch(select);
         }
       } else if (fieldAccessible) {
         dispatch(move);
@@ -155,7 +162,7 @@ export const Board: FC = () => {
       }
     };
 
-    if (_selected) {
+    if (selectedChip.length) {
       whenFigureSelected();
     } else if (fieldOccupied) {
       dispatch(select);
@@ -172,6 +179,10 @@ export const Board: FC = () => {
   useEffect(() => {
     handleSizeCheck();
   }, []);
+
+  useEffect(() => {
+    setSelectedShip(position);
+  }, [position]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -237,7 +248,10 @@ export const Board: FC = () => {
         }) }
       </GameBoard>
 
-      <Dices size={ size }/>
+      <Dices
+        size={ size }
+        onThrow={() => null}
+      />
     </BoardWrapper>
   ), [id, size, teamId, selectedX, selectedY, highlightedX, highlightedY, figuresState, dicesResult]);
 };

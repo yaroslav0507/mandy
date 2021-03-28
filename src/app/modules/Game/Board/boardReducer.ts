@@ -15,6 +15,7 @@ export interface ITeam {
   color: string;
   start: number[][];
   home: number[][];
+  doors: number[];
 }
 
 export interface ITeams {
@@ -58,25 +59,30 @@ export const teamsConfig: ITeam[] = [{
   name  : 'Player 1',
   color : '#00b894',
   start : [[7, 8], [7, 9], [7, 10], [7, 11]],
-  home  : [[6, 8], [6, 9], [6, 10], [6, 11]]
+  home  : [[6, 8], [6, 9], [6, 10], [6, 11]],
+  doors : [6, 12]
 }, {
   active: true,
   name  : 'Player 2',
   color : '#0984e3',
   start : [[4, 7], [3, 7], [2, 7], [1, 7]],
-  home  : [[1, 6], [2, 6], [3, 6], [4, 6]]
+  home  : [[1, 6], [2, 6], [3, 6], [4, 6]],
+  doors : [0, 6]
+
 }, {
   active: true,
   name  : 'Player 3',
   color : '#fdcb6e',
   start : [[5, 4], [5, 3], [5, 2], [5, 1]],
-  home  : [[6, 4], [6, 3], [6, 2], [6, 1]]
+  home  : [[6, 4], [6, 3], [6, 2], [6, 1]],
+  doors : [6, 0]
 }, {
   active: true,
   name  : 'Player 4',
   color : '#d63031',
   start : [[8, 5], [9, 5], [10, 5], [11, 5]],
-  home  : [[8, 6], [9, 6], [10, 6], [11, 6]]
+  home  : [[8, 6], [9, 6], [10, 6], [11, 6]],
+  doors : [12, 6]
 }];
 
 const teams: ITeams = {};

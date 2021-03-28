@@ -1,5 +1,6 @@
-import { ICoordinates, isFieldAccessible } from './boardReducer';
+import { IChip, ICoordinates, isFieldAccessible, teamsConfig } from './boardReducer';
 
+// Get exit position of the lock room by enter position
 export const lockRooms: ICoordinates<number[]> = {
   1 : {
     1 : [1, 0],
@@ -11,6 +12,7 @@ export const lockRooms: ICoordinates<number[]> = {
   }
 };
 
+// Get teleportation object by teleportation enter position [x][y]
 export const teleportMap: ICoordinates<{ enter: number[]; exit: number[] }> = {
   0 : {
     1: { exit: [1, 1], enter: [0, 1] },
@@ -50,6 +52,7 @@ export const teleportMap: ICoordinates<{ enter: number[]; exit: number[] }> = {
   }
 };
 
+// Returns position of a certain figure when has neighbours at on place.
 export const figureMargin = (size: number, key: string, id: number) => {
   const shift = `${ size / 4 }px`;
   const center = '0';
@@ -139,7 +142,7 @@ export const getDirection = (x: number, y: number, teamId: number) => {
   }
 };
 
-export const getProjectedPosition = (x: number, y: number, teamId: number, dice = 0) => {
+export const getProjectedPosition = (x: number, y: number, figures: ICoordinates<IChip[]>, teamId: number, dice = 0) => {
   const direction = getDirection(x, y, teamId);
   const sideLength = 12;
   let canAccess = true;
@@ -147,19 +150,28 @@ export const getProjectedPosition = (x: number, y: number, teamId: number, dice 
   let targetX;
   let targetY;
 
+  const accessible = (x: number, y: number) => {
+    const fieldOccupied = figures[x]?.[y];
+    const fieldOccupiedBy = fieldOccupied && fieldOccupied[0];
+    const fieldAccessible = isFieldAccessible(x, y);
+    // const isFriendlyTarget = fieldOccupiedBy && fieldOccupiedBy.teamId === teamId;
+
+    return fieldAccessible && !fieldOccupiedBy;
+  };
+
   if (y === 0) {
     const overflow = x + dice > sideLength;
     targetX = overflow ? sideLength : x + dice;
     targetY = overflow ? x + dice - sideLength : 0;
 
-    for (let a = x; a <= targetX; a++) {
-      if (!isFieldAccessible(a, y)) {
+    for (let a = x + 1; a <= targetX; a++) {
+      if (!accessible(a, y)) {
         canAccess = false;
       }
 
-      if (x === targetX && y !== targetY) {
-        for (let b = y; b <= targetY; b++) {
-          if (!isFieldAccessible(targetX, b)) {
+      if (a === targetX && y !== targetY) {
+        for (let b = y + 1; b <= targetY; b++) {
+          if (!accessible(targetX, b)) {
             canAccess = false;
           }
         }
@@ -170,14 +182,14 @@ export const getProjectedPosition = (x: number, y: number, teamId: number, dice 
     targetX = overflow ? 0 : x - dice;
     targetY = overflow ? sideLength + (x - dice) : sideLength;
 
-    for (let a = x; a >= targetX; a--) {
-      if (!isFieldAccessible(a, y)) {
+    for (let a = x - 1; a >= targetX; a--) {
+      if (!accessible(a, y)) {
         canAccess = false;
       }
 
-      if (x === targetX && y !== targetY) {
-        for (let b = y; b >= targetY; b--) {
-          if (!isFieldAccessible(targetX, b)) {
+      if (a === targetX && y !== targetY) {
+        for (let b = y - 1; b >= targetY; b--) {
+          if (!accessible(targetX, b)) {
             canAccess = false;
           }
         }
@@ -188,14 +200,14 @@ export const getProjectedPosition = (x: number, y: number, teamId: number, dice 
     targetX = overflow ? dice - y : 0;
     targetY = overflow ? 0 : y - dice;
 
-    for (let a = y; a >= targetY; a--) {
-      if (!isFieldAccessible(x, a)) {
+    for (let a = y - 1; a >= targetY; a--) {
+      if (!accessible(x, a)) {
         canAccess = false;
       }
 
       if (x !== targetX && y === targetY) {
-        for (let b = y; b <= targetX; b++) {
-          if (!isFieldAccessible(targetX, b)) {
+        for (let b = y + 1; b <= targetX; b++) {
+          if (!accessible(targetX, b)) {
             canAccess = false;
           }
         }
@@ -206,14 +218,14 @@ export const getProjectedPosition = (x: number, y: number, teamId: number, dice 
     targetX = overflow ? sideLength - ((y + dice) - sideLength) : sideLength;
     targetY = overflow ? sideLength : y + dice;
 
-    for (let a = y; a <= targetY; a++) {
-      if (!isFieldAccessible(x, a)) {
+    for (let a = y + 1; a <= targetY; a++) {
+      if (!accessible(x, a)) {
         canAccess = false;
       }
 
       if (x !== targetX && y === targetY) {
-        for (let b = y; b <= targetY; b++) {
-          if (!isFieldAccessible(targetX, b)) {
+        for (let b = y + 1; b <= targetY; b++) {
+          if (!accessible(targetX, b)) {
             canAccess = false;
           }
         }
@@ -223,12 +235,17 @@ export const getProjectedPosition = (x: number, y: number, teamId: number, dice 
     canAccess = false;
   }
 
-  const lockRoomExit = lockRooms[x]?.[y];
-
   if (canAccess) {
     projection = [targetX, targetY];
-  } else if (lockRoomExit && dice === 6) {
-    projection = lockRoomExit;
+  } else if (dice === 6) {
+    const lockRoomExit = lockRooms[x]?.[y];
+    const homeExit = teamId >= 0 && !isFieldAccessible(x, y) && teamsConfig[teamId]?.doors;
+
+    if (lockRoomExit) {
+      projection = lockRoomExit;
+    } else if (homeExit) {
+      projection = homeExit;
+    }
   }
 
   console.log(direction, dice);
