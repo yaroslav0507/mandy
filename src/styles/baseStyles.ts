@@ -4,7 +4,7 @@ import '../fonts/index.css';
 import { theme }             from './theme';
 
 export const BaseStyles = createGlobalStyle`
-  ${reset}
+  ${ reset }
 
   *, *:before, *:after {
     box-sizing: border-box;
@@ -15,12 +15,12 @@ export const BaseStyles = createGlobalStyle`
   }
 
   a {
-    color           : ${theme.colors.darkGrey};
+    color           : ${ theme.colors.darkGrey };
     text-decoration : none;
   }
 
   a:hover {
-    color: ${theme.colors.grey};
+    color: ${ theme.colors.grey };
   }
 
   input::-ms-clear,

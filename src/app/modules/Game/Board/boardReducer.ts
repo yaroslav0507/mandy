@@ -51,7 +51,7 @@ export const map = [
   [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
-export const isFieldAccessible = (x: number, y: number) => !!map[x][y];
+export const isFieldAccessible = (x: number, y: number) => !!map[x]?.[y];
 
 export const teamsConfig: ITeam[] = [{
   active: true,

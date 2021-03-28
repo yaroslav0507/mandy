@@ -16,19 +16,19 @@ export const Field = styled.div<{ empty: boolean; highlighted: boolean; occupied
       cursor: pointer;
       background-color: #1f2229;
     }
-  `};
+  ` };
   
   ${ (props) => !props.empty && css`
     
-  `};
+  ` };
   
   ${ (props) => props.highlighted && css`
     background-color: #1f2229;
-  `};
+  ` };
   
   ${ (props) => props.occupied && css`
     background-color: #44484e75;
-  `};
+  ` };
   
   &:after {
     content: "";

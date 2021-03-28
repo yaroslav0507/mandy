@@ -42,7 +42,7 @@ interface IDicesState {
 
 const initialState: IDicesState = {
   angles: [[0, 0], [0, 0]],
-  result: []
+  result: [1, 1]
 };
 
 export const dicesSlice = createSlice({

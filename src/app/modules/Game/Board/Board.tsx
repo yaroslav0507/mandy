@@ -1,10 +1,10 @@
-import React, { FC, useEffect, useMemo, useState }            from 'react';
-import styled                                                 from 'styled-components';
-import { theme }                                              from '../../../../styles';
-import { Grid }                                               from '@material-ui/core';
-import { Chip }                                               from './components/Chip';
-import { Field }                                              from './components/Field';
-import { Dices }                                              from '../Dices/Dices';
+import React, { FC, useEffect, useMemo, useState }                    from 'react';
+import styled                                                         from 'styled-components';
+import { theme }                                                      from '../../../../styles';
+import { Grid }                                                       from '@material-ui/core';
+import { Chip }                                                       from './components/Chip';
+import { Field }                                                      from './components/Field';
+import { Dices }                                                      from '../Dices/Dices';
 import {
   deselectChip,
   IChip,
@@ -20,10 +20,11 @@ import {
   selectTeams,
   setHighlightedField,
   teamsConfig
-}                                                             from './boardReducer';
-import { useAppDispatch, useAppSelector }                     from '../../../hooks';
-import { Legend }                                             from './components/Legend';
-import { figureMargin, getDirection, lockRooms, teleportMap } from './maps';
+}                                                                     from './boardReducer';
+import { useAppDispatch, useAppSelector }                             from '../../../hooks';
+import { Legend }                                                     from './components/Legend';
+import { figureMargin, getProjectedPosition, lockRooms, teleportMap } from './maps';
+import { selectDicesResult }                                          from '../Dices/dicesReducer';
 
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
@@ -59,18 +60,29 @@ export const Board: FC = () => {
   const figures: IChip[] = useAppSelector(selectActiveChips);
   const [figuresState, setFiguresState] = useState([] as IChip[]);
   const boardState = useAppSelector(selectChipsMap);
+  const dicesResult = useAppSelector(selectDicesResult);
   const teams = useAppSelector(selectTeams);
   const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
   const dispatch = useAppDispatch();
   const [size, setSize] = useState(85);
-  const [selected, setSelected] = useState(false);
+  const _selected = selectedX !== undefined;
 
   const figureByCoords = (x: number, y: number) => boardState[x] && boardState[x][y];
   const isChipSelected = (figureId: number, figureTeamId: number) => figureId === id && figureTeamId === teamId;
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
+  const projectedPosition = (x: number, y: number, dice: number) => getProjectedPosition(x, y, teamId, dice);
+
+  const highlightProjectedField = () => {
+    const dice = Math.max.apply(null, dicesResult);
+    const projection = projectedPosition(selectedX, selectedY, dice);
+    if (projection) {
+      dispatch(setHighlightedField(projection as number[]));
+    } else if (highlightedX !== undefined) {
+      dispatch(resetHighlightedField());
+    }
+  };
 
   const onFieldClick = (x: number, y: number, id: number) => {
-    const _selected = selectedX !== undefined;
     const fieldOccupied = figureByCoords(x, y);
     const figure = fieldOccupied && fieldOccupied.find(figure => figure.id === id);
     const fieldAccessible = isFieldAccessible(x, y);
@@ -80,8 +92,6 @@ export const Board: FC = () => {
     const deselect = deselectChip();
 
     const whenFigureLanded = () => {
-      console.log(getDirection(x, y, teamId));
-
       const currTeleportMap = teleportMap[x] && teleportMap[x][y] && teleportMap[x][y];
       const teleportsFrom = currTeleportMap && currTeleportMap.enter || [];
       const teleportsTo = currTeleportMap && currTeleportMap.exit || [];
@@ -124,7 +134,6 @@ export const Board: FC = () => {
           } else {
             dispatch(moveChip(teleportsTo));
             dispatch(resetHighlightedField());
-            dispatch(deselect);
           }
         }, 500);
       }
@@ -150,7 +159,6 @@ export const Board: FC = () => {
       whenFigureSelected();
     } else if (fieldOccupied) {
       dispatch(select);
-      console.log(getDirection(x, y, teamId));
     }
   };
 
@@ -163,14 +171,14 @@ export const Board: FC = () => {
 
   useEffect(() => {
     handleSizeCheck();
-    setSelected(selectedX !== undefined);
   }, []);
 
   useEffect(() => {
     setTimeout(() => {
       setFiguresState(figures);
     });
-  }, [figures]);
+    setTimeout(highlightProjectedField, 1000);
+  }, [figures, selectedY, selectedX, dicesResult]);
 
   useEffect(() => {
     window.addEventListener('resize', () => handleSizeCheck());
@@ -211,7 +219,7 @@ export const Board: FC = () => {
             arab   : ['1', '2', '3', '4']
           };
 
-          const label = displayLabels && alphabets.roman[id];
+          const label = displayLabels && alphabets.arab[id];
 
           return (
             <Chip
@@ -231,5 +239,5 @@ export const Board: FC = () => {
 
       <Dices size={ size }/>
     </BoardWrapper>
-  ), [id, size, teamId, selectedX, selectedY, figuresState]);
+  ), [id, size, teamId, selectedX, selectedY, highlightedX, highlightedY, figuresState, dicesResult]);
 };

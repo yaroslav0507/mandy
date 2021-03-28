@@ -1,52 +1,52 @@
-import { ICoordinates } from './boardReducer';
+import { ICoordinates, isFieldAccessible } from './boardReducer';
 
 export const lockRooms: ICoordinates<number[]> = {
-  1: {
-    1: [1, 0],
+  1 : {
+    1 : [1, 0],
     11: [0, 11]
   },
   11: {
-    1: [12, 1],
+    1 : [12, 1],
     11: [11, 12]
   }
 };
 
-export const teleportMap: ICoordinates<{enter: number[]; exit: number[]}> = {
+export const teleportMap: ICoordinates<{ enter: number[]; exit: number[] }> = {
   0 : {
-    1: { exit: [1, 1], enter: [0, 1]},
-    3: { exit: [3, 0], enter: [0, 3]},
-    4: { exit: [12, 4], enter: [0, 4]},
-    8: { exit: [12, 8], enter: [0, 8]},
-    9: { exit: [3, 12], enter: [0, 9]}
+    1: { exit: [1, 1], enter: [0, 1] },
+    3: { exit: [3, 0], enter: [0, 3] },
+    4: { exit: [12, 4], enter: [0, 4] },
+    8: { exit: [12, 8], enter: [0, 8] },
+    9: { exit: [3, 12], enter: [0, 9] }
   },
   1 : {
-    12: { exit: [1, 11], enter: [1, 12]}
+    12: { exit: [1, 11], enter: [1, 12] }
   },
   3 : {
-    0 : { exit: [0, 3], enter: [3, 0]},
-    12: { exit: [0, 9], enter: [3, 12]}
+    0 : { exit: [0, 3], enter: [3, 0] },
+    12: { exit: [0, 9], enter: [3, 12] }
   },
   4 : {
-    0 : { exit: [4, 12], enter: [4, 0]},
-    12: { exit: [4, 0], enter: [4, 12]}
+    0 : { exit: [4, 12], enter: [4, 0] },
+    12: { exit: [4, 0], enter: [4, 12] }
   },
   8 : {
-    0 : { exit: [8, 12], enter: [8, 0]},
-    12: { exit: [8, 0], enter: [8, 12]}
+    0 : { exit: [8, 12], enter: [8, 0] },
+    12: { exit: [8, 0], enter: [8, 12] }
   },
   9 : {
-    0 : { exit: [12, 3], enter: [9, 0]},
-    12: { exit: [12, 9], enter: [9, 12]}
+    0 : { exit: [12, 3], enter: [9, 0] },
+    12: { exit: [12, 9], enter: [9, 12] }
   },
   11: {
-    0: { exit: [11, 1], enter: [11, 0]}
+    0: { exit: [11, 1], enter: [11, 0] }
   },
   12: {
-    3 : { exit: [9, 0], enter: [12, 3]},
-    4 : { exit: [0, 4], enter: [12, 4]},
-    8 : { exit: [0, 8], enter: [12, 8]},
-    9 : { exit: [9, 12], enter: [12, 9]},
-    11: { exit: [11, 11], enter: [12, 11]}
+    3 : { exit: [9, 0], enter: [12, 3] },
+    4 : { exit: [0, 4], enter: [12, 4] },
+    8 : { exit: [0, 8], enter: [12, 8] },
+    9 : { exit: [9, 12], enter: [12, 9] },
+    11: { exit: [11, 11], enter: [12, 11] }
   }
 };
 
@@ -112,12 +112,12 @@ export const getDirection = (x: number, y: number, teamId: number) => {
   } as any)?.[teamId]?.[x]?.[y];
 
   const lockRoom = ({
-    1: {
-      1: directions.up,
+    1 : {
+      1 : directions.up,
       11: directions.left
     },
     11: {
-      1: directions.right,
+      1 : directions.right,
       11: directions.down
     }
   } as any)?.[x]?.[y];
@@ -137,4 +137,102 @@ export const getDirection = (x: number, y: number, teamId: number) => {
   } else if (x === 0 && y > 0) {
     return directions.up;
   }
+};
+
+export const getProjectedPosition = (x: number, y: number, teamId: number, dice = 0) => {
+  const direction = getDirection(x, y, teamId);
+  const sideLength = 12;
+  let canAccess = true;
+  let projection;
+  let targetX;
+  let targetY;
+
+  if (y === 0) {
+    const overflow = x + dice > sideLength;
+    targetX = overflow ? sideLength : x + dice;
+    targetY = overflow ? x + dice - sideLength : 0;
+
+    for (let a = x; a <= targetX; a++) {
+      if (!isFieldAccessible(a, y)) {
+        canAccess = false;
+      }
+
+      if (x === targetX && y !== targetY) {
+        for (let b = y; b <= targetY; b++) {
+          if (!isFieldAccessible(targetX, b)) {
+            canAccess = false;
+          }
+        }
+      }
+    }
+  } else if (y === sideLength) {
+    const overflow = x - dice < 0;
+    targetX = overflow ? 0 : x - dice;
+    targetY = overflow ? sideLength + (x - dice) : sideLength;
+
+    for (let a = x; a >= targetX; a--) {
+      if (!isFieldAccessible(a, y)) {
+        canAccess = false;
+      }
+
+      if (x === targetX && y !== targetY) {
+        for (let b = y; b >= targetY; b--) {
+          if (!isFieldAccessible(targetX, b)) {
+            canAccess = false;
+          }
+        }
+      }
+    }
+  } else if (x === 0) {
+    const overflow = y - dice < 0;
+    targetX = overflow ? dice - y : 0;
+    targetY = overflow ? 0 : y - dice;
+
+    for (let a = y; a >= targetY; a--) {
+      if (!isFieldAccessible(x, a)) {
+        canAccess = false;
+      }
+
+      if (x !== targetX && y === targetY) {
+        for (let b = y; b <= targetX; b++) {
+          if (!isFieldAccessible(targetX, b)) {
+            canAccess = false;
+          }
+        }
+      }
+    }
+  } else if (x === sideLength) {
+    const overflow = y + dice > sideLength;
+    targetX = overflow ? sideLength - ((y + dice) - sideLength) : sideLength;
+    targetY = overflow ? sideLength : y + dice;
+
+    for (let a = y; a <= targetY; a++) {
+      if (!isFieldAccessible(x, a)) {
+        canAccess = false;
+      }
+
+      if (x !== targetX && y === targetY) {
+        for (let b = y; b <= targetY; b++) {
+          if (!isFieldAccessible(targetX, b)) {
+            canAccess = false;
+          }
+        }
+      }
+    }
+  } else {
+    canAccess = false;
+  }
+
+  const lockRoomExit = lockRooms[x]?.[y];
+
+  if (canAccess) {
+    projection = [targetX, targetY];
+  } else if (lockRoomExit && dice === 6) {
+    projection = lockRoomExit;
+  }
+
+  console.log(direction, dice);
+  console.log(canAccess, projection);
+
+  return projection;
 };

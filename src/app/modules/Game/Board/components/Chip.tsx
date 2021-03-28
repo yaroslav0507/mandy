@@ -63,18 +63,18 @@ export const ChipCircle = styled.div`${ ({ color, theme: { breakpoints } }: any)
   }
 ` }`;
 
-export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, margin = 0, selected, x, y, label}) => css`
+export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, margin = 0, selected, x, y, label }) => css`
   width: ${ size }px;
   height: ${ size }px;
   position: ${ relative ? 'relative' : 'absolute' };
   transition: ease .3s all;
-  margin: ${margin};
+  margin: ${ margin };
   ${ (x || y) && `
     transform: translate(${ x * size }px, ${ y * size }px);
   ` }
   
   &:after {
-    content: '${label}';
+    content: '${ label }';
     position: absolute;
     display: flex;
     justify-content: center;
@@ -124,8 +124,8 @@ export const Chip: FC<IChipWrapperProps> = ({
     selected={ selected }
     relative={ relative }
     onClick={ onClick }
-    margin={margin}
-    label={label}
+    margin={ margin }
+    label={ label }
     x={ x }
     y={ y }
   >
