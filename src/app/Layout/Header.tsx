@@ -8,7 +8,7 @@ import { DRAWER_WIDTH }                                     from './Sidebar';
 import { Chip }                                             from '../modules/Game/Board/components/Chip';
 import { randomize }                                        from '../modules/Game/Dices/dicesReducer';
 import { useAppDispatch, useAppSelector }                   from '../hooks';
-import { selectCurrentTeam, selectTeams }                   from '../modules/Game/Board/boardReducer';
+import { selectCurrentTeam }                                from '../modules/Settings/settingsReducer';
 
 interface IStyledHeaderProps extends AppBarProps {
   shifted: number;
@@ -50,7 +50,7 @@ const StyledHeader: FC<IStyledHeaderProps> = styled(MuiHeader)`&& ${ ({ shifted,
   }
     
   transition: ${ transitions.create(['margin', 'width'], {
-  easing  : shifted ? transitions.easing.easeOut : transitions.easing.sharp,
+  easing:   shifted ? transitions.easing.easeOut : transitions.easing.sharp,
   duration: shifted ? transitions.duration.enteringScreen : transitions.duration.leavingScreen
 }) };
 ` }`;
@@ -63,7 +63,7 @@ const StyledToolbar = styled(Toolbar)`&& {
   padding: 0 15px 0 10px;
 }`;
 
-const StyledBadge = styled(Badge)`&& {
+export const StyledBadge = styled(Badge)`&& {
  .MuiBadge-badge {
     right             : 6px;
     top               : 6px;
@@ -84,7 +84,6 @@ export const Header: FC<IHeaderOwnProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const team = useAppSelector(selectCurrentTeam);
-  const teams = useAppSelector(selectTeams);
 
   return (
     <StyledHeader shifted={ +(sidebarOpen && !isMobile) }>
@@ -103,24 +102,26 @@ export const Header: FC<IHeaderOwnProps> = ({
           <StyledLogo/>
         </LogoSection>
 
-        <Section>
-          <StyledBadge
-            color="primary"
-            badgeContent={ '2' }
-            aria-controls="user-menu"
-            aria-haspopup="true"
-            onClick={ () => dispatch(randomize()) }
-          >
-            <Chip
-              x={ 0 }
-              y={ 0 }
-              size={ 50 }
-              selected
-              relative
-              color={ team?.color }
-            />
-          </StyledBadge>
-        </Section>
+        { team && (
+          <Section>
+            <StyledBadge
+              color="primary"
+              badgeContent={ '2' }
+              aria-controls="user-menu"
+              aria-haspopup="true"
+              onClick={ () => dispatch(randomize()) }
+            >
+              <Chip
+                x={ 0 }
+                y={ 0 }
+                size={ 50 }
+                selected
+                relative
+                color={ team?.color }
+              />
+            </StyledBadge>
+          </Section>
+        ) }
       </StyledToolbar>
     </StyledHeader>
   );

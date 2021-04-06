@@ -8,23 +8,18 @@ import { Dices }                                                      from '../D
 import {
   deselectChip,
   IChip,
+  IMapState,
   isFieldAccessible,
   map,
   moveChip,
   resetHighlightedField,
-  selectActiveChips,
   selectChip,
-  selectChipsMap,
-  selectCurrentChip,
-  selectHighlighted,
-  selectTeams,
   setHighlightedField,
-  teamsConfig
 }                                                                     from './boardReducer';
-import { useAppDispatch, useAppSelector }                             from '../../../hooks';
+import { useAppDispatch }                                             from '../../../hooks';
 import { Legend }                                                     from './components/Legend';
 import { figureMargin, getProjectedPosition, lockRooms, teleportMap } from './maps';
-import { selectDicesResult }                                          from '../Dices/dicesReducer';
+import { teamsConfig }                                                from '../../Settings/settingsReducer';
 
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
@@ -54,24 +49,28 @@ const Row = styled.div`
 
 const gameBoardId = 'game-board';
 
-export const Board: FC = () => {
-  const displayLabels = true;
-  const { id, teamId, position } = useAppSelector(selectCurrentChip);
-  const figures: IChip[] = useAppSelector(selectActiveChips);
-  const [figuresState, setFiguresState] = useState([] as IChip[]);
-  const boardState = useAppSelector(selectChipsMap);
-  const dicesResult = useAppSelector(selectDicesResult);
-  const teams = useAppSelector(selectTeams);
-  const [highlightedX, highlightedY] = useAppSelector(selectHighlighted);
-  const dispatch = useAppDispatch();
-  const [size, setSize] = useState(85);
-  const [selectedChip, setSelectedShip] = useState([] as number[]);
-  const [selectedX, selectedY] = selectedChip;
+interface IBoardProps extends IMapState {
+  dicesResult: number[];
+}
 
-  const figureByCoords = (x: number, y: number) => boardState[x] && boardState[x][y];
+export const Board: FC<IBoardProps> = ({
+  chips,
+  selected,
+  occupied,
+  highlighted,
+  dicesResult,
+}) => {
+  const displayLabels = true;
+  const { id, teamId, position } = selected;
+  const [ selectedX, selectedY ] = position;
+  const [ highlightedX, highlightedY ] = highlighted;
+  const [ size, setSize ] = useState(85);
+
+  const dispatch = useAppDispatch();
+  const figureByCoords = (x: number, y: number) => occupied[x] && occupied[x][y];
   const isChipSelected = (figureId: number, figureTeamId: number) => figureId === id && figureTeamId === teamId;
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
-  const projectedPosition = (x: number, y: number, dice: number) => getProjectedPosition(x, y, boardState, teamId, dice);
+  const projectedPosition = (x: number, y: number, dice: number) => getProjectedPosition(x, y, occupied, teamId, dice);
 
   const highlightProjectedField = () => {
     const sorted = dicesResult.slice().sort((a, b) => b - a);
@@ -90,7 +89,7 @@ export const Board: FC = () => {
     const figure = fieldOccupied && fieldOccupied.find(figure => figure.id === figureId);
     const fieldAccessible = isFieldAccessible(x, y);
     const isFriendlyTarget = teamId < 0 || figure && figure.teamId === teamId;
-    const move = moveChip([x, y]);
+    const move = moveChip([ x, y ]);
     const select = selectChip(figure);
     const deselect = deselectChip();
 
@@ -144,7 +143,7 @@ export const Board: FC = () => {
 
     const whenFigureSelected = () => {
       if (fieldOccupied && teamId >= 0) {
-        const [homeDoorsX, homeDoorsY] = teams[teamId]?.doors;
+        const [ homeDoorsX, homeDoorsY ] = teamsConfig[teamId]?.doors;
         const isHomeExit = homeDoorsX === x && homeDoorsY === y;
         const isSelfClick = selectedX === x && selectedY === y;
 
@@ -162,7 +161,7 @@ export const Board: FC = () => {
       }
     };
 
-    if (selectedChip.length) {
+    if (position.length) {
       whenFigureSelected();
     } else if (fieldOccupied) {
       dispatch(select);
@@ -176,20 +175,20 @@ export const Board: FC = () => {
     setSize(fieldSize);
   };
 
+  const alphabets = {
+    english: [ 'A', 'B', 'C', 'D' ],
+    greek  : [ 'α', 'β', 'γ', 'δ' ],
+    roman  : [ 'I', 'II', 'III', 'IV' ],
+    arab   : [ '1', '2', '3', '4' ]
+  };
+
   useEffect(() => {
     handleSizeCheck();
   }, []);
 
   useEffect(() => {
-    setSelectedShip(position);
-  }, [position]);
-
-  useEffect(() => {
-    setTimeout(() => {
-      setFiguresState(figures);
-    });
     setTimeout(highlightProjectedField, 1000);
-  }, [figures, selectedY, selectedX, dicesResult]);
+  }, [ chips, selectedY, selectedX, dicesResult ]);
 
   useEffect(() => {
     window.addEventListener('resize', () => handleSizeCheck());
@@ -197,10 +196,11 @@ export const Board: FC = () => {
     return () => {
       window.removeEventListener('resize', () => handleSizeCheck());
     };
-  }, [size, window.innerWidth]);
+  }, [ size, window.innerWidth ]);
 
   return useMemo(() => (
     <BoardWrapper item>
+      <Dices size={ size }/>
       <GameBoard id={ gameBoardId }>
         <Legend size={ size }/>
 
@@ -219,39 +219,24 @@ export const Board: FC = () => {
           </Row>
         )) }
 
-        { figuresState.map(({ id, teamId, position: [x, y] }, index) => {
-          const target = boardState[x] && boardState[x][y];
-          const marginKey = target && target.map(figure => figure.id).join('');
-
-          const alphabets = {
-            english: ['A', 'B', 'C', 'D'],
-            greek  : ['α', 'β', 'γ', 'δ'],
-            roman  : ['I', 'II', 'III', 'IV'],
-            arab   : ['1', '2', '3', '4']
-          };
-
-          const label = displayLabels && alphabets.arab[id];
+        { chips.map(({ id, teamId, position: [ x, y ] }, index) => {
+          const marginKey = figureByCoords(x, y)?.map(figure => figure.id).join('');
 
           return (
             <Chip
               x={ x }
               y={ y }
               key={ index }
-              label={ label }
               size={ size }
-              margin={ figureMargin(size, marginKey, id) }
-              color={ teams[teamId]?.color }
+              color={ teamsConfig[teamId]?.color }
               selected={ isChipSelected(id, teamId) }
               onClick={ () => onFieldClick(x, y, id) }
+              label={ displayLabels && alphabets.arab[id] }
+              margin={ figureMargin(size, marginKey, id) }
             />
           );
         }) }
       </GameBoard>
-
-      <Dices
-        size={ size }
-        onThrow={() => null}
-      />
     </BoardWrapper>
-  ), [id, size, teamId, selectedX, selectedY, highlightedX, highlightedY, figuresState, dicesResult]);
+  ), [ id, size, teamId, selectedX, selectedY, highlightedX, highlightedY, chips, dicesResult ]);
 };

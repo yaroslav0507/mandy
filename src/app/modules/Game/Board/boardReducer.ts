@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { RootState }                  from '../../../store';
+import { RootState }                        from '../../../store';
+import { ITeams, selectTeams, teamsConfig } from '../../Settings/settingsReducer';
+import { createSelector }                   from 'reselect';
 
 type TMapCoords = number[];
 
@@ -9,22 +11,8 @@ export interface IChip {
   position: number[];
 }
 
-export interface ITeam {
-  active: boolean;
-  name: string;
-  color: string;
-  start: number[][];
-  home: number[][];
-  doors: number[];
-}
-
-export interface ITeams {
-  [id: number]: ITeam;
-}
-
-interface IMapState {
+export interface IMapState {
   chips: IChip[];
-  teams: ITeams;
   occupied: ICoordinates<IChip[]>;
   selected: IChip;
   highlighted: TMapCoords;
@@ -54,45 +42,14 @@ export const map = [
 
 export const isFieldAccessible = (x: number, y: number) => !!map[x]?.[y];
 
-export const teamsConfig: ITeam[] = [{
-  active: true,
-  name  : 'Player 1',
-  color : '#00b894',
-  start : [[7, 8], [7, 9], [7, 10], [7, 11]],
-  home  : [[6, 8], [6, 9], [6, 10], [6, 11]],
-  doors : [6, 12]
-}, {
-  active: true,
-  name  : 'Player 2',
-  color : '#0984e3',
-  start : [[4, 7], [3, 7], [2, 7], [1, 7]],
-  home  : [[1, 6], [2, 6], [3, 6], [4, 6]],
-  doors : [0, 6]
-
-}, {
-  active: true,
-  name  : 'Player 3',
-  color : '#fdcb6e',
-  start : [[5, 4], [5, 3], [5, 2], [5, 1]],
-  home  : [[6, 4], [6, 3], [6, 2], [6, 1]],
-  doors : [6, 0]
-}, {
-  active: true,
-  name  : 'Player 4',
-  color : '#d63031',
-  start : [[8, 5], [9, 5], [10, 5], [11, 5]],
-  home  : [[8, 6], [9, 6], [10, 6], [11, 6]],
-  doors : [12, 6]
-}];
-
 const teams: ITeams = {};
 const chips: IChip[] = [];
 
-teamsConfig.forEach((team, teamId) => {
-  teams[teamId] = team;
+teamsConfig.forEach((team) => {
+  teams[team.id] = team;
   team.start.forEach((position, id) => chips.push({
     id,
-    teamId: teamId,
+    teamId: team.id,
     position
   }));
 });
@@ -117,7 +74,6 @@ const generateChipsPositionMap = (items: IChip[] = chips): ICoordinates<IChip[]>
 
 const initialState: IMapState = JSON.parse(JSON.stringify({
   chips,
-  teams,
   occupied   : generateChipsPositionMap(chips),
   selected   : { id: 0, position: [] },
   highlighted: []
@@ -148,7 +104,7 @@ export const boardSlice = createSlice({
     },
     moveChip(state, action: PayloadAction<TMapCoords>) {
       if (state.selected && state.selected.position && state.selected.position.length) {
-        const { teams, selected: { teamId, position } } = state;
+        const { selected: { teamId, position } } = state;
 
         if (position) {
           const [moveFromX, moveFromY] = position;
@@ -157,7 +113,7 @@ export const boardSlice = createSlice({
 
           const isOccupied = ([x, y]: number[]) => state.occupied[x] && state.occupied[x][y] && state.occupied[x][y][0];
           const targetChip = isOccupied(moveTo);
-          const startPosition: any = targetChip && teams[targetChip.teamId].start.find(position => !isOccupied(position));
+          const startPosition: any = targetChip && teamsConfig[targetChip.teamId].start.find(position => !isOccupied(position));
 
           const moveChip = ({ position: [x, y], id }: IChip) => (x === moveFromX && y === moveFromY && id === state.selected.id) ? moveTo : [x, y];
           const sendToStart = ({ position: [x, y] }: IChip) => (x === moveToX && y === moveToY) ? startPosition : [x, y];
@@ -186,11 +142,9 @@ export const boardSlice = createSlice({
 // Action creators are generated for each case reducer function
 export const { selectChip, deselectChip, moveChip, setHighlightedField, resetHighlightedField } = boardSlice.actions;
 
-export const selectTeams = (state: RootState) => state.board.teams;
-export const selectCurrentTeam = (state: RootState) => state.board.selected && state.board.teams[state.board.selected.teamId];
-export const selectChipsMap = (state: RootState) => state.board.occupied;
-export const selectActiveChips = (state: RootState) => state.board.chips;
+export const selectChips = (state: RootState) => state.board.chips;
+export const selectOccupied = (state: RootState) => state.board.occupied;
+export const selectActiveChips = createSelector([selectTeams, selectChips], (teams, chips) =>
+  chips.filter(chip => teams[chip.teamId]?.active));
 export const selectCurrentChip = (state: RootState) => state.board.selected;
 export const selectHighlighted = (state: RootState) => state.board.highlighted;
-
-export default boardSlice.reducer;

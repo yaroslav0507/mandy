@@ -22,14 +22,14 @@ const DicesLayer = styled.div<ISizeProp>`${ ({ size }) => css`
   right: 0;
   margin: auto;
   cursor: pointer;
+  z-index: 1;
 ` }`;
 
 interface IDicesProps {
   size: number;
-  onThrow(): void;
 }
 
-export const Dices: FC<IDicesProps> = ({ size, onThrow}) => {
+export const Dices: FC<IDicesProps> = ({ size }) => {
   const angles = useSelector(selectDicesAngles);
   const dispatch = useAppDispatch();
 
@@ -50,7 +50,6 @@ export const Dices: FC<IDicesProps> = ({ size, onThrow}) => {
 
   const onClick = () => {
     dispatch(randomize());
-    onThrow();
   };
 
   return (

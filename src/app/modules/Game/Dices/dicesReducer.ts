@@ -70,5 +70,3 @@ export const { randomize } = dicesSlice.actions;
 
 export const selectDicesAngles = (state: RootState) => state.dices.angles;
 export const selectDicesResult = (state: RootState) => state.dices.result;
-
-export default dicesSlice.reducer;
