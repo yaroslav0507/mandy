@@ -103,7 +103,7 @@ export const boardSlice = createSlice({
       state.highlighted = [];
     },
     moveChip(state, action: PayloadAction<TMapCoords>) {
-      if (state.selected && state.selected.position && state.selected.position.length) {
+      if (state?.selected?.position?.length) {
         const { selected: { teamId, position } } = state;
 
         if (position) {
@@ -111,20 +111,26 @@ export const boardSlice = createSlice({
           const moveTo = action.payload;
           const [moveToX, moveToY] = moveTo;
 
-          const isOccupied = ([x, y]: number[]) => state.occupied[x] && state.occupied[x][y] && state.occupied[x][y][0];
+          const targetChips = ([x, y]: number[]) => state.occupied[x] && state.occupied[x][y] && state.occupied[x][y];
+          const isOccupied = ([x, y]: number[]) => targetChips([x, y])?.[0];
           const targetChip = isOccupied(moveTo);
           const startPosition: any = targetChip && teamsConfig[targetChip.teamId].start.find(position => !isOccupied(position));
 
-          const moveChip = ({ position: [x, y], id }: IChip) => (x === moveFromX && y === moveFromY && id === state.selected.id) ? moveTo : [x, y];
-          const sendToStart = ({ position: [x, y] }: IChip) => (x === moveToX && y === moveToY) ? startPosition : [x, y];
+          const checkMovement = ({ position: [x, y], id }: IChip) => (x === moveFromX && y === moveFromY && id === state.selected.id) ? moveTo : [x, y];
+          const sendToStart = ({ position: [x, y], id }: IChip) => (x === moveToX && y === moveToY) ? startPosition : [x, y];
 
-          const chips = state.chips.map((chip, index) => {
-            const isEnemy = targetChip && chip.teamId !== teamId;
-
-            return {
-              ...chip,
-              position: isEnemy ? sendToStart(chip) : moveChip(chip)
-            };
+          const chips = state.chips.map((chip) => {
+            if (chip.position[0] === moveToX && chip.position[1] === moveToY && chip.teamId !== teamId) {
+              return {
+                ...chip,
+                position: sendToStart(chip)
+              };
+            } else {
+              return {
+                ...chip,
+                position: checkMovement(chip)
+              };
+            }
           });
 
           state.chips = chips;

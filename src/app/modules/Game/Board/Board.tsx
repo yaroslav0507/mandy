@@ -12,14 +12,15 @@ import {
   isFieldAccessible,
   map,
   moveChip,
-  resetHighlightedField,
-  selectChip,
+  resetHighlightedField, selectActiveChips,
+  selectChip, selectCurrentChip, selectHighlighted, selectOccupied,
   setHighlightedField,
 }                                                                     from './boardReducer';
-import { useAppDispatch }                                             from '../../../hooks';
+import { useAppDispatch, useAppSelector }                             from '../../../hooks';
 import { Legend }                                                     from './components/Legend';
 import { figureMargin, getProjectedPosition, lockRooms, teleportMap } from './maps';
 import { teamsConfig }                                                from '../../Settings/settingsReducer';
+import { selectDicesResult }                                          from '../Dices/dicesReducer';
 
 const BoardWrapper = styled(Grid)`&& {
   width: 100%;
@@ -49,17 +50,13 @@ const Row = styled.div`
 
 const gameBoardId = 'game-board';
 
-interface IBoardProps extends IMapState {
-  dicesResult: number[];
-}
+export const Board: FC = () => {
+  const chips = useAppSelector(selectActiveChips);
+  const selected = useAppSelector(selectCurrentChip);
+  const occupied = useAppSelector(selectOccupied);
+  const dicesResult = useAppSelector(selectDicesResult);
+  const highlighted = useAppSelector(selectHighlighted);
 
-export const Board: FC<IBoardProps> = ({
-  chips,
-  selected,
-  occupied,
-  highlighted,
-  dicesResult,
-}) => {
   const displayLabels = true;
   const { id, teamId, position } = selected;
   const [ selectedX, selectedY ] = position;
@@ -67,7 +64,7 @@ export const Board: FC<IBoardProps> = ({
   const [ size, setSize ] = useState(85);
 
   const dispatch = useAppDispatch();
-  const figureByCoords = (x: number, y: number) => occupied[x] && occupied[x][y];
+  const figuresByCoords = (x: number, y: number) => occupied[x] && occupied[x][y];
   const isChipSelected = (figureId: number, figureTeamId: number) => figureId === id && figureTeamId === teamId;
   const isChipHighlighted = (x: number, y: number) => x === highlightedX && y === highlightedY;
   const projectedPosition = (x: number, y: number, dice: number) => getProjectedPosition(x, y, occupied, teamId, dice);
@@ -85,15 +82,30 @@ export const Board: FC<IBoardProps> = ({
   };
 
   const onFieldClick = (x: number, y: number, figureId: number) => {
-    const fieldOccupied = figureByCoords(x, y);
-    const figure = fieldOccupied && fieldOccupied.find(figure => figure.id === figureId);
+    const targetFieldFigures = figuresByCoords(x, y);
+    const figure = targetFieldFigures && targetFieldFigures.find(figure => figure.id === figureId);
     const fieldAccessible = isFieldAccessible(x, y);
-    const isFriendlyTarget = teamId < 0 || figure && figure.teamId === teamId;
     const move = moveChip([ x, y ]);
     const select = selectChip(figure);
     const deselect = deselectChip();
 
-    const whenFigureLanded = () => {
+    const sendHome = (fromX: number, fromY: number) => {
+      const _cache = JSON.stringify(selected);
+      const figures = figuresByCoords(fromX, fromY);
+
+      figures.forEach(figure => {
+        if (figure.teamId !== teamId) {
+          dispatch(selectChip(figure));
+          const { start } = teamsConfig[figure.teamId];
+          dispatch(moveChip(start[figure.id]));
+          dispatch(deselect);
+        }
+      });
+
+      dispatch(selectChip(JSON.parse(_cache)));
+    };
+
+    const checkForAutomatedMovements = () => {
       const currTeleportMap = teleportMap[x] && teleportMap[x][y] && teleportMap[x][y];
       const teleportsFrom = currTeleportMap && currTeleportMap.enter || [];
       const teleportsTo = currTeleportMap && currTeleportMap.exit || [];
@@ -102,8 +114,8 @@ export const Board: FC<IBoardProps> = ({
         dispatch(setHighlightedField(teleportsTo));
 
         setTimeout(() => {
-          const goesToLockRoomExit = teleportsTo && lockRooms[teleportsTo[0]] && lockRooms[teleportsTo[0]][teleportsTo[1]];
-          const lockRoomOccupied = teleportsTo && figureByCoords(teleportsTo[0], teleportsTo[1]);
+          const goesToLockRoomExit = teleportsTo && lockRooms?.[teleportsTo[0]]?.[teleportsTo[1]];
+          const lockRoomOccupied = teleportsTo && figuresByCoords(teleportsTo[0], teleportsTo[1]);
           const lockRoomOccupiedByEnemy = lockRoomOccupied && lockRoomOccupied[0].teamId !== teamId;
 
           const saveFirstKillRest = () => {
@@ -122,7 +134,7 @@ export const Board: FC<IBoardProps> = ({
           };
 
           if (goesToLockRoomExit && lockRoomOccupiedByEnemy) {
-            const fieldFigures = figureByCoords(selectedX, selectedY);
+            const fieldFigures = figuresByCoords(selectedX, selectedY);
             const primaryFigure = fieldFigures[0];
 
             saveFirstKillRest();
@@ -142,28 +154,29 @@ export const Board: FC<IBoardProps> = ({
     };
 
     const whenFigureSelected = () => {
-      if (fieldOccupied && teamId >= 0) {
-        const [ homeDoorsX, homeDoorsY ] = teamsConfig[teamId]?.doors;
+      if (targetFieldFigures) {
+        const [homeDoorsX, homeDoorsY] = teamsConfig[teamId]?.doors;
         const isHomeExit = homeDoorsX === x && homeDoorsY === y;
         const isSelfClick = selectedX === x && selectedY === y;
 
-        if (!isSelfClick && (isHomeExit || fieldAccessible && !isFriendlyTarget)) {
+        if (!isSelfClick && (isHomeExit || fieldAccessible)) {
+          sendHome(selectedX, selectedY);
           dispatch(move);
-          whenFigureLanded();
+          checkForAutomatedMovements();
         } else {
           dispatch(select);
         }
       } else if (fieldAccessible) {
         dispatch(move);
-        whenFigureLanded();
+        checkForAutomatedMovements();
       } else {
         dispatch(deselect);
       }
     };
 
-    if (position.length) {
+    if (selected?.position?.length) {
       whenFigureSelected();
-    } else if (fieldOccupied) {
+    } else if (targetFieldFigures) {
       dispatch(select);
     }
   };
@@ -192,15 +205,18 @@ export const Board: FC<IBoardProps> = ({
 
   useEffect(() => {
     window.addEventListener('resize', () => handleSizeCheck());
+    window.addEventListener('orientationchange', () => handleSizeCheck());
 
     return () => {
       window.removeEventListener('resize', () => handleSizeCheck());
+      window.removeEventListener('orientationchange', () => handleSizeCheck());
     };
   }, [ size, window.innerWidth ]);
 
-  return useMemo(() => (
+  return (
     <BoardWrapper item>
       <Dices size={ size }/>
+
       <GameBoard id={ gameBoardId }>
         <Legend size={ size }/>
 
@@ -212,7 +228,7 @@ export const Board: FC<IBoardProps> = ({
                 className="field"
                 empty={ !field }
                 highlighted={ isChipHighlighted(x, y) }
-                occupied={ !!figureByCoords(x, y) && isFieldAccessible(x, y) }
+                occupied={ !!figuresByCoords(x, y) && isFieldAccessible(x, y) }
                 onClick={ () => onFieldClick(x, y, 0) }
               />
             )) }
@@ -220,7 +236,7 @@ export const Board: FC<IBoardProps> = ({
         )) }
 
         { chips.map(({ id, teamId, position: [ x, y ] }, index) => {
-          const marginKey = figureByCoords(x, y)?.map(figure => figure.id).join('');
+          const marginKey = figuresByCoords(x, y)?.map(figure => figure.id).join('');
 
           return (
             <Chip
@@ -238,5 +254,5 @@ export const Board: FC<IBoardProps> = ({
         }) }
       </GameBoard>
     </BoardWrapper>
-  ), [ id, size, teamId, selectedX, selectedY, highlightedX, highlightedY, chips, dicesResult ]);
+  );
 };

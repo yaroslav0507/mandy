@@ -73,22 +73,6 @@ export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, m
     transform: translate(${ x * size }px, ${ y * size }px);
   ` }
   
-  &:after {
-    content: '${ label }';
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    font-family: 'Jost';
-    font-weight: 700;
-    font-size: ${ size / 3 }px;
-    color: #44484e;
-    text-shadow: 0 1px 0 #ffffff85;
-    opacity: .3;
-  }
-  
   &:hover {
     cursor: pointer;
   
@@ -106,6 +90,21 @@ export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, m
     }
   ` }
 ` }`;
+
+const ChipLabel  = styled.div<{size: number}>`
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: 'Jost';
+  font-weight: 700;
+  font-size: ${ ({size}) => size / 3 }px;
+  color: #44484e;
+  text-shadow: 0 1px 0 #ffffff85;
+  opacity: .3;
+`;
 
 export const Chip: FC<IChipWrapperProps> = ({
   color,
@@ -130,5 +129,6 @@ export const Chip: FC<IChipWrapperProps> = ({
     y={ y }
   >
     <ChipCircle color={ color }/>
+    <ChipLabel size={size}>{label}</ChipLabel>
   </ChipWrapper>
 ), [x, y, size, margin, color, selected]);
