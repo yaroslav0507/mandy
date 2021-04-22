@@ -10,17 +10,6 @@ export const Routes: FC = () => (
     <Route
       exact
       path="/"
-      render={ () => <Redirect to={ `/${ EAppModule.Game }/all/` }/> }
-    />
-
-    <Route
-      exact
-      path={ `/${ EAppModule.Game }` }
-      render={ () => <Redirect to={ `/${ EAppModule.Game }/ai` }/> }
-    />
-
-    <Route
-      path={ `/${ EAppModule.Game }/:page` }
       component={ Game }
     />
 
