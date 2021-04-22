@@ -5,6 +5,7 @@ import { ISizeProp }          from './Dices';
 const DiceWrapper = styled.div`${ css`
   width: 100%;
   height: 100%;
+  padding: 5px;
   position: relative;
   transform-style: preserve-3d;
   /* Resolve distortion */
@@ -54,10 +55,10 @@ const DiceFaceLeft = styled(DiceFace)<ISizeProp>`${ ({ size }) => css`&& {
 }` }`;
 
 const DiceFaceRight = styled(DiceFace)<ISizeProp>`${ ({ size }) => css`&& {
-    transform: rotateY(90deg) translateZ(${ size / 2 }px);
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }` }`;
+  transform: rotateY(90deg) translateZ(${ size / 2 }px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}` }`;
 
 const Dot = styled.div<ISizeProp>`${ ({ size }) => css`&& {
   background: black;

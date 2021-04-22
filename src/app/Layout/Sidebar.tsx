@@ -101,7 +101,6 @@ const Section = styled.div`
   }
 `;
 
-
 const StyledGameLogo = styled(GameLogo)`
   width: 120px;
   height: 100px;

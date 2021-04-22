@@ -38,11 +38,13 @@ const rollDices = () => {
 interface IDicesState {
   angles: number[][];
   result: number[];
+  played: boolean;
 }
 
 const initialState: IDicesState = {
   angles: [[0, 0], [0, 0]],
-  result: [1, 1]
+  result: [1, 1],
+  played: false
 };
 
 export const dicesSlice = createSlice({
@@ -59,7 +61,8 @@ export const dicesSlice = createSlice({
 
       return {
         angles,
-        result
+        result,
+        played: true
       };
     }
   }
@@ -70,3 +73,4 @@ export const { randomize } = dicesSlice.actions;
 
 export const selectDicesAngles = (state: RootState) => state.dices.angles;
 export const selectDicesResult = (state: RootState) => state.dices.result;
+export const selectDicesPlayed = (state: RootState) => state.dices.played;
