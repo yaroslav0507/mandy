@@ -96,4 +96,23 @@ export const BaseStyles = createGlobalStyle`
     content : "";
     clear   : both;
   }
+  
+  @keyframes dices-scale {
+    0% {
+      transform: scale(1);
+    }
+    20% {
+        transform: scale(1.7);
+    }
+    40% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+  }
+  
+  .animate-zoom {
+    animation: 1s cubic-bezier(0.61, 0.37, 0.46, 0.85) 0s infinite alternate dices-scale; 
+  }
 `;

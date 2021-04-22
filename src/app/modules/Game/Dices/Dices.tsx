@@ -10,19 +10,7 @@ export interface ISizeProp {
   size: number;
 }
 
-const bounce = keyframes`
-  0% {
-      transform: scale(1.7);
-  }
-  20% {
-      transform: scale(1.5);
-  }
-  100% {
-      transform: scale(1);
-  }
-`;
-
-const DicesLayer = styled.div<ISizeProp & { active: boolean }>`${ ({ size, active }) => css`
+const DicesLayer = styled.div<ISizeProp>`${ ({ size }) => css`
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -38,10 +26,6 @@ const DicesLayer = styled.div<ISizeProp & { active: boolean }>`${ ({ size, activ
   z-index: 1;
   transform-style: preserve-3d;
   transition: ease 1s transform;
-  
-  ${ active && css`
-    animation: ${ bounce } 1s linear;
-  `}
 `}`;
 
 interface IDicesProps {
@@ -49,7 +33,6 @@ interface IDicesProps {
 }
 
 export const Dices: FC<IDicesProps> = ({ size }) => {
-  const [active, setActive] = useState(false);
   const angles = useSelector(selectDicesAngles);
   const dicesPlayed = useSelector(selectDicesPlayed);
   const dispatch = useAppDispatch();
@@ -67,14 +50,18 @@ export const Dices: FC<IDicesProps> = ({ size }) => {
     }
 
     if (dicesWrapper && dicesPlayed) {
-      const angle = randomNumber(-4, 4) * 90;
-      dicesWrapper.style.transform = 'rotate(' + angle + 'deg)';
+      const angle = randomNumber(0, 15) * 90;
+      const rotationStyle = `rotate(${angle}deg)`;
 
-      setActive(true);
+      dicesWrapper.style.transform = `${rotationStyle} scale(1.7)`;
 
       setTimeout(() => {
-        setActive(false);
+        dicesWrapper.style.transition = 'ease .3s transform';
       }, 500);
+
+      setTimeout(() => {
+        dicesWrapper.style.transform = `${rotationStyle}`;
+      }, 1000);
     }
   };
 
@@ -89,7 +76,6 @@ export const Dices: FC<IDicesProps> = ({ size }) => {
   return (
     <DicesLayer
       id="dices"
-      active={active}
       size={ size }
       onClick={ onClick }
     >
