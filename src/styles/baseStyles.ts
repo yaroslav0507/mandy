@@ -101,14 +101,20 @@ export const BaseStyles = createGlobalStyle`
     0% {
       transform: scale(1);
     }
+    10% {
+        filter: blur(1px);
+    }
     20% {
         transform: scale(1.7);
+        filter: none;
     }
     40% {
         transform: scale(1.5);
+        filter: blur(2px);
     }
     100% {
         transform: scale(1);
+        filter: none;
     }
   }
   

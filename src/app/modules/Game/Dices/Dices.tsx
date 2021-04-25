@@ -23,7 +23,7 @@ const DicesLayer = styled.div<ISizeProp>`${ ({ size }) => css`
   right: 0;
   margin: auto;
   cursor: pointer;
-  z-index: 1;
+  z-index: 2;
   transform-style: preserve-3d;
   transition: ease 1s transform;
 `}`;
@@ -53,15 +53,18 @@ export const Dices: FC<IDicesProps> = ({ size }) => {
       const angle = randomNumber(0, 15) * 90;
       const rotationStyle = `rotate(${angle}deg)`;
 
-      dicesWrapper.style.transform = `${rotationStyle} scale(1.7)`;
+      dicesWrapper.style.transition = 'ease 1s all';
+      dicesWrapper.style.filter = 'blur(2px)';
+      dicesWrapper.style.transform = `${rotationStyle} scale(1.8)`;
 
       setTimeout(() => {
-        dicesWrapper.style.transition = 'ease .3s transform';
-      }, 500);
+        dicesWrapper.style.transition = 'ease .4s all';
+        dicesWrapper.style.filter = 'none';
+      }, 400);
 
       setTimeout(() => {
         dicesWrapper.style.transform = `${rotationStyle}`;
-      }, 1000);
+      }, 800);
     }
   };
 
