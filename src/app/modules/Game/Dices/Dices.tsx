@@ -53,12 +53,12 @@ export const Dices: FC<IDicesProps> = ({ size }) => {
       const angle = randomNumber(0, 15) * 90;
       const rotationStyle = `rotate(${angle}deg)`;
 
-      dicesWrapper.style.transition = 'ease 1s all';
-      dicesWrapper.style.filter = 'blur(2px)';
-      dicesWrapper.style.transform = `${rotationStyle} scale(1.8)`;
+      dicesWrapper.style.transition = 'ease 1s transform';
+      dicesWrapper.style.filter = 'blur(.5px)';
+      dicesWrapper.style.transform = `${rotationStyle} scale(2)`;
 
       setTimeout(() => {
-        dicesWrapper.style.transition = 'ease .4s all';
+        dicesWrapper.style.transition = 'ease .5s all';
         dicesWrapper.style.filter = 'none';
       }, 400);
 
