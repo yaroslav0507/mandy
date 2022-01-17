@@ -10,6 +10,12 @@ export const BaseStyles = createGlobalStyle`
     box-sizing: border-box;
   }
   
+  html {
+    background: #262933;
+    padding-top: constant(safe-area-inset-top);
+    padding-top: env(safe-area-inset-top);
+  }
+  
   body {
     font-family: "Jost", "Roboto", "Helvetica", "Arial", sans-serif;
   }

@@ -63,7 +63,7 @@ export const figureMargin = (size: number, key: string, id: number) => {
   const bottomLeft = `${ shift } 0 0 -${ shift }`;
   const bottomRight = `${ shift }`;
 
-  const map: any = {
+  const map: { [key: string]: { [key: number]: string} } = {
     '0':    { 0: center },
     '1':    { 1: center },
     '2':    { 2: center },

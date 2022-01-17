@@ -10,7 +10,7 @@ const isMobile = () => /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera
 
 const Wrapper = styled.div`
   flex-grow: 1;
-  height: 100vh;
+  height: calc(100vh - env(safe-area-inset-top, 0));
 `;
 
 const AppFrame = styled.div`

@@ -74,4 +74,4 @@ export const settingsSlice = createSlice({
 export const { toggleTeam } = settingsSlice.actions;
 
 export const selectTeams = (state: RootState) => state.settings.teams;
-export const selectCurrentTeam = (state: RootState) => state.settings?.teams[state.board?.selected?.teamId];
+export const selectActiveTeams = (state: RootState) => state.settings.teams.filter(team => team.active);

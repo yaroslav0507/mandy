@@ -6,9 +6,9 @@ import styled, { css }                                      from 'styled-compone
 import { ReactComponent as Logo }                           from '../../images/icons/logo.svg';
 import { DRAWER_WIDTH }                                     from './Sidebar';
 import { Chip }                                             from '../modules/Game/Board/components/Chip';
-import { randomize }                                        from '../modules/Game/Dices/dicesReducer';
 import { useAppDispatch, useAppSelector }                   from '../hooks';
-import { selectCurrentTeam }                                from '../modules/Settings/settingsReducer';
+import { selectActiveTeams }                 from '../modules/Settings/settingsReducer';
+import { deselectChip, selectCurrentTeam, setCurrentTeam } from '../modules/Game/Board/boardReducer';
 
 interface IStyledHeaderProps extends AppBarProps {
   shifted: number;
@@ -84,6 +84,15 @@ export const Header: FC<IHeaderOwnProps> = ({
 }) => {
   const dispatch = useAppDispatch();
   const team = useAppSelector(selectCurrentTeam);
+  const teams = useAppSelector(selectActiveTeams);
+
+  const setNextPlayer = () => {
+    const teamIndex = teams.map(team => team.id).indexOf(team?.id);
+    const nextTeamIndex = teamIndex !== teams.length - 1 ? teamIndex + 1 : 0;
+
+    dispatch(deselectChip());
+    dispatch(setCurrentTeam(teams[nextTeamIndex]?.id));
+  };
 
   return (
     <StyledHeader shifted={ +(sidebarOpen && !isMobile) }>
@@ -102,14 +111,14 @@ export const Header: FC<IHeaderOwnProps> = ({
           <StyledLogo/>
         </LogoSection>
 
-        { team && (
+        { team !== undefined && (
           <Section>
             <StyledBadge
               color="primary"
               badgeContent={ '2' }
               aria-controls="user-menu"
               aria-haspopup="true"
-              onClick={ () => dispatch(randomize()) }
+              onClick={ setNextPlayer }
             >
               <Chip
                 x={ 0 }
@@ -117,7 +126,7 @@ export const Header: FC<IHeaderOwnProps> = ({
                 size={ 50 }
                 selected
                 relative
-                color={ team?.color }
+                color={ teams.find(t => t.id === team?.id)?.color }
               />
             </StyledBadge>
           </Section>

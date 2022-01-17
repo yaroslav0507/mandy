@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@capacitor/android": "^3.3.4",
+    "@capacitor/cli": "^3.3.4",
+    "@capacitor/core": "^3.3.4",
+    "@capacitor/ios": "^3.3.4",
     "axios": "^0.21.1",
     "babel-plugin-styled-components": "^1.12.0",
     "body-parser": "^1.19.0",
@@ -74,13 +78,18 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && npx cap sync",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "storybook": "start-storybook -p 6006 -s public",
     "build-storybook": "build-storybook -s public",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+    "deploy": "gh-pages -d build",
+    "postinstall": "yarn build",
+    "capacitor": "npx cap add ios && npx cap add android && npx cap sync --deployment",
+    "ios-device": "npx cap run ios",
+    "android-device": "npx cap run android",
+    "resources": "cordova-res ios --skip-config --copy && cordova-res android --skip-config --copy"
   },
   "eslintConfig": {
     "extends": [

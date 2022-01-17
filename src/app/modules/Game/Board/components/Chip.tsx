@@ -10,6 +10,7 @@ interface IChipWrapperProps {
   color?: string;
   selected?: boolean;
   relative?: boolean;
+  locked?: boolean;
   onClick?: () => void;
 }
 
@@ -30,7 +31,7 @@ const movement = keyframes`
     transform: scale(1);
   }
   50% {
-    transform: scale(1.5);
+    transform: scale(1.1);
   }
   100% {
     transform: scale(1);
@@ -63,7 +64,7 @@ export const ChipCircle = styled.div`${ ({ color, theme: { breakpoints } }: any)
   }
 ` }`;
 
-export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, margin = 0, selected, x, y, label }) => css`
+export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, margin = 0, selected, x, y, locked }) => css`
   width: ${ size }px;
   height: ${ size }px;
   position: ${ relative ? 'relative' : 'absolute' };
@@ -77,7 +78,7 @@ export const ChipWrapper = styled.div<IChipWrapperProps>`${ ({ size, relative, m
     cursor: pointer;
   
     ${ ChipCircle } {
-      box-shadow: 0 0 0 3px #ffffffde;
+      box-shadow: 0 0 0 3px ${ locked ? '#0000003b' : '#ffffffde' };
     }
   }
   
@@ -115,7 +116,8 @@ export const Chip: FC<IChipWrapperProps> = ({
   label,
   x,
   y,
-  onClick
+  onClick,
+  locked
 }) => useMemo(() => (
   <ChipWrapper
     size={ size }
@@ -125,6 +127,7 @@ export const Chip: FC<IChipWrapperProps> = ({
     onClick={ onClick }
     margin={ margin }
     label={ label }
+    locked={ locked }
     x={ x }
     y={ y }
   >
